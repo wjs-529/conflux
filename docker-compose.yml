@@ -1,0 +1,11 @@
+services:
+  veilnet-conflux:
+    build: .
+    container_name: veilnet-conflux
+    image: veilnet/conflux:beta
+    pull_policy: always
+    restart: unless-stopped
+    privileged: true
+    # network_mode: host
+    env_file:
+      - .env
