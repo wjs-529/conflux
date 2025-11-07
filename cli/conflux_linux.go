@@ -206,6 +206,8 @@ func (c *conflux) StartVeilNet(apiBaseURL, anchorToken string, portal bool) erro
 	// Lock the anchor mutex
 	c.anchorMutex.Lock()
 	defer c.anchorMutex.Unlock()
+	// Signal the anchor is started
+	defer c.anchorCtxCancel()
 
 	// initialize the anchor once
 	c.anchorOnce = sync.Once{}
@@ -287,9 +289,6 @@ func (c *conflux) StartVeilNet(apiBaseURL, anchorToken string, portal bool) erro
 			veilnet.Logger.Sugar().Errorf("metrics server error: %v", err)
 		}
 	}()
-
-	// Signal the anchor is started
-	c.anchorCtxCancel()
 
 	return nil
 }
