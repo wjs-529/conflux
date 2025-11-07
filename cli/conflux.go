@@ -1,5 +1,7 @@
 package cli
 
+import "github.com/veil-net/veilnet"
+
 type Conflux interface {
 
 	// Run runs the conflux service
@@ -29,8 +31,11 @@ type Conflux interface {
 	// StopVeilNet stops the veilnet service
 	StopVeilNet()
 
-	// Liveness checks the liveness of the conflux service
-	Liveness()
+	// GetAnchor returns the anchor of the conflux service
+	GetAnchor() *veilnet.Anchor
+
+	// IsAnchorStarted checks if the anchor is started
+	WaitAnchorStart()
 
 	// CreateTUN creates a TUN device
 	CreateTUN() error

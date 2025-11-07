@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"os"
+
 	"github.com/alecthomas/kong"
 	"github.com/veil-net/veilnet"
 )
@@ -103,6 +105,17 @@ type Docker struct{
 
 func (cmd *Docker) Run() error {
 	conflux := NewConflux()
+	go func() {
+		conflux.WaitAnchorStart()
+		anchor := conflux.GetAnchor()
+		if anchor == nil {
+			os.Exit(1)
+		}
+		for{
+			<-anchor.Ctx.Done()
+			os.Exit(1)
+		}
+	}()
 	err := conflux.Run()
 	if err != nil {
 		return err

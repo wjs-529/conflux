@@ -41,10 +41,13 @@ type conflux struct {
 
 	anchorMutex sync.Mutex
 	anchorOnce  sync.Once
+	anchorCtx   context.Context
+	anchorCtxCancel context.CancelFunc
 }
 
 func newConflux() *conflux {
 	c := &conflux{}
+	c.anchorCtx, c.anchorCtxCancel = context.WithCancel(context.Background())
 	c.api = newAPI(c)
 	return c
 }
@@ -300,6 +303,9 @@ func (c *conflux) StartVeilNet(apiBaseURL, anchorToken string, portal bool) erro
 		}
 	}()
 
+	// Signal the anchor is started
+	c.anchorCtxCancel()
+
 	return nil
 }
 
@@ -341,14 +347,21 @@ func (c *conflux) StopVeilNet() {
 			c.CloseTUN()
 			c.device = nil
 		}()
+
+		// Reset the anchor context
+		c.anchorCtx, c.anchorCtxCancel = context.WithCancel(context.Background())
 	})
 }
 
-func (c *conflux) Liveness() {
+func (c *conflux) GetAnchor() *veilnet.Anchor {
 	if c.anchor == nil {
-		return
+		return nil
 	}
-	<-c.anchor.Ctx.Done()
+	return c.anchor
+}
+
+func (c *conflux) WaitAnchorStart() {
+	<-c.anchorCtx.Done()
 }
 
 func (c *conflux) CreateTUN() error {
