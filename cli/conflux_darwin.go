@@ -337,7 +337,7 @@ func (c *conflux) ingress() {
 					copy(wgBuf[16:], bufs[i])
 					bufs[i] = wgBuf
 				}
-				_, err := c.device.Write(bufs[:n], 0)
+				_, err := c.device.Write(bufs[:n], 16)
 				if err != nil {
 					veilnet.Logger.Sugar().Errorf("failed to write to TUN device: %v", err)
 					continue
