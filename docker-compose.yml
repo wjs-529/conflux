@@ -6,6 +6,6 @@ services:
     pull_policy: always
     restart: unless-stopped
     privileged: true
-    # network_mode: host
+    network_mode: host
     env_file:
       - .env
