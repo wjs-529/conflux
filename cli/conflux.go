@@ -34,9 +34,6 @@ type Conflux interface {
 	// GetAnchor returns the anchor of the conflux service
 	GetAnchor() *veilnet.Anchor
 
-	// IsAnchorStarted checks if the anchor is started
-	WaitAnchorStart()
-
 	// CreateTUN creates a TUN device
 	CreateTUN() error
 

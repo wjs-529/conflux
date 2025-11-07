@@ -1,7 +1,11 @@
 package cli
 
 import (
-	"os"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 
 	"github.com/alecthomas/kong"
 	"github.com/veil-net/veilnet"
@@ -104,21 +108,53 @@ type Docker struct{
 }
 
 func (cmd *Docker) Run() error {
-	conflux := NewConflux()
-	go func() {
-		conflux.WaitAnchorStart()
-		anchor := conflux.GetAnchor()
-		if anchor == nil {
-			os.Exit(1)
-		}
-		for{
-			<-anchor.Ctx.Done()
-			os.Exit(1)
-		}
-	}()
-	err := conflux.Run()
+	// Parse the Guardian URL
+	path := fmt.Sprintf("%s/conflux/register", cmd.Guardian)
+
+	// Marshal the request body
+	body, err := json.Marshal(cmd)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal request: %v", err)
 	}
+
+	// Create the request
+	req, err := http.NewRequest("POST", path, bytes.NewBuffer(body))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+
+	// Set the Authorization header
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cmd.Token))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to make request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	// Parse the response body
+	var confluxToken ConfluxToken
+	err = json.Unmarshal(body, &confluxToken)
+	if err != nil {
+		return fmt.Errorf("failed to parse response body: %v", err)
+	}
+
+	conflux := NewConflux()
+	err = conflux.StartVeilNet(cmd.Guardian, confluxToken.Token, cmd.Portal)
+	if err != nil {
+		return fmt.Errorf("failed to start VeilNet: %v", err)
+	}
+	
+	anchor := conflux.GetAnchor()
+	<-anchor.Ctx.Done()
 	return nil
 }
