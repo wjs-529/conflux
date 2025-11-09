@@ -136,9 +136,8 @@ func (c *conflux) StartVeilNet(apiBaseURL, anchorToken string, portal bool) erro
 		return err
 	}
 
-	// Start the ingress and egress threads
-	go c.ingress()
-	go c.egress()
+	// Link the anchor to the TUN device
+	c.anchor.LinkWithWgTUN(c.device)
 
 	// Close existing metrics server
 	if c.metricsServer != nil {
@@ -300,80 +299,6 @@ func (c *conflux) RemoveBypassRoutes() {
 			return true
 		}
 	})
-}
-
-func (c *conflux) ingress() {
-
-	defer func() {
-		if r := recover(); r != nil {
-			veilnet.Logger.Sugar().Errorf("panic in ingress: %v", r)
-		}
-	}()
-
-	bufs := make([][]byte, c.device.BatchSize())
-
-	for {
-		select {
-		case <-c.anchor.Ctx.Done():
-			veilnet.Logger.Sugar().Info("Conflux ingress stopped")
-			return
-		default:
-			n := c.anchor.Read(bufs, c.device.BatchSize())
-			if n > 0 {
-				for i := 0; i < n; i++ {
-					wgBuf := make([]byte, 16+len(bufs[i]))
-					copy(wgBuf[16:], bufs[i])
-					bufs[i] = wgBuf
-				}
-				_, err := c.device.Write(bufs[:n], 16)
-				if err != nil {
-					veilnet.Logger.Sugar().Errorf("failed to write to TUN device: %v", err)
-					continue
-				}
-			}
-		}
-	}
-}
-
-func (c *conflux) egress() {
-
-	defer func() {
-		if r := recover(); r != nil {
-			veilnet.Logger.Sugar().Errorf("panic in egress: %v", r)
-		}
-	}()
-
-	// Get the TUN MTU
-	mtu, err := c.device.MTU()
-	if err != nil {
-		veilnet.Logger.Sugar().Errorf("failed to get TUN MTU: %v", err)
-		// Use default MTU if we can't get the actual one
-		mtu = 1500
-	}
-
-	// Create the buffers
-	bufs := make([][]byte, c.device.BatchSize())
-	sizes := make([]int, c.device.BatchSize())
-	// Pre-allocate buffers
-	for i := range bufs {
-		bufs[i] = make([]byte, mtu)
-	}
-
-	for {
-		select {
-		case <-c.anchor.Ctx.Done():
-			veilnet.Logger.Sugar().Info("Conflux egress stopped")
-			return
-		default:
-			n, err := c.device.Read(bufs, sizes, 0)
-			if err != nil {
-				continue
-			}
-			if n > 0 {
-				c.anchor.Write(bufs[:n], sizes[:n])
-			}
-		}
-	}
 }
 
 // ConfigHost configures the TUN interface with the given IP address and netmask
