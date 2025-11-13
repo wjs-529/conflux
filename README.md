@@ -25,7 +25,7 @@ Before setting up your VeilNet Conflux, ensure you have:
 - **Root/Admin Access**: Required for TUN device creation and network configuration
 - **Network Connectivity**: Stable internet connection
 - **Guardian Account**: Access to the VeilNet Guardian service
-- **Registration Token**: A registration token from [https://auth.veilnet.app](https://auth.veilnet.app) (required for primary method using `register` command)
+- **Registration Token**: A registration token from [https://auth.veilnet.app](https://auth.veilnet.app) (required for primary method using `register` command or `docker` command)
 - **Conflux Token** (for integration only): A conflux token from the Guardian service API. These tokens expire in 30 seconds and should only be used for programmatic integration. See [https://guardian.veilnet.app/docs#/](https://guardian.veilnet.app/docs#/) for API documentation.
 
 > **Note**: macOS (Darwin) support is experimental and may require additional setup or troubleshooting.
@@ -34,52 +34,12 @@ Before setting up your VeilNet Conflux, ensure you have:
 
 ### 1. Choose Your Flow
 
-- **Primary Method**: Use the `register` command with a Registration Token to create and start a Conflux. Registration tokens can be obtained from [https://auth.veilnet.app](https://auth.veilnet.app). This is the recommended way to connect a machine.
+- **Primary Method**: Use the `register` command (native) or `docker` command with a Registration Token to create and start a Conflux. Registration tokens can be obtained from [https://auth.veilnet.app](https://auth.veilnet.app). This is the recommended way to connect a machine.
 - **Integration Method**: The `up` command with a Conflux Token is for integration only. Conflux tokens expire in 30 seconds and should only be used for programmatic integration. For integration API documentation, see [https://guardian.veilnet.app/docs#/](https://guardian.veilnet.app/docs#/).
 
 ### 2. Choose Your Deployment Method
 
-#### Option A: Docker (Recommended)
-
-**Using Docker Compose:**
-
-1. **Create docker-compose.yml**:
-```yaml
-services:
-  veilnet-conflux:
-    container_name: veilnet-conflux
-    image: veilnet/conflux:nats-0.0.6
-    pull_policy: always
-    restart: unless-stopped
-    # use this for Rift mode so that the host will use VeilNet as internet access, only available on Linux.
-    # network_mode: host 
-    privileged: true
-    env_file:
-      - .env
-```
-
-2. **Create .env file**:
-```bash
-VEILNET_TOKEN=your-conflux-token-here
-VEILNET_PORTAL=false # or true
-```
-
-3. **Run**:
-```bash
-docker compose up -d
-```
-
-**Using Docker directly:**
-```bash
-docker run -d \
-  --name veilnet-conflux \
-  --privileged \
-  -e VEILNET_TOKEN=your-conflux-token \
-  -e VEILNET_PORTAL=false \
-  veilnet/conflux:nats-0.0.6
-```
-
-#### Option B: Native Installation
+#### Option A: Native Installation (Recommended)
 
 1. **Download the binary**:
 Download the binary from the releases page.
@@ -124,6 +84,50 @@ sudo ./veilnet-conflux register
 > **Note**: Registration tokens can be obtained from [https://auth.veilnet.app](https://auth.veilnet.app). This is the primary method to connect a machine. Without a CIDR given, conflux will obtain a random VeilNet IP within the plane subnet. With a CIDR given, the conflux will have that IP address if it is available.
 
 **For integration only**: You can use the `up` command with a conflux token (expires in 30 seconds). See [https://guardian.veilnet.app/docs#/](https://guardian.veilnet.app/docs#/) for API documentation.
+
+#### Option B: Docker (Second Recommended)
+
+**Using Docker Compose:**
+
+1. **Create docker-compose.yml**:
+```yaml
+services:
+  veilnet-conflux:
+    container_name: veilnet-conflux
+    image: veilnet/conflux:nats-0.0.6
+    pull_policy: always
+    restart: unless-stopped
+    # use this for Rift mode so that the host will use VeilNet as internet access, only available on Linux.
+    # network_mode: host 
+    privileged: true
+    env_file:
+      - .env
+```
+
+2. **Create .env file**:
+```bash
+VEILNET_REGISTRATION_TOKEN=your-registration-token-here
+VEILNET_PORTAL=false # or true
+```
+
+> **Note**: Registration tokens can be obtained from [https://auth.veilnet.app](https://auth.veilnet.app). This is the primary method to connect a machine.
+
+3. **Run**:
+```bash
+docker compose up -d
+```
+
+**Using Docker directly:**
+```bash
+docker run -d \
+  --name veilnet-conflux \
+  --privileged \
+  -e VEILNET_REGISTRATION_TOKEN=your-registration-token \
+  -e VEILNET_PORTAL=false \
+  veilnet/conflux:nats-0.0.6
+```
+
+> **Note**: The Docker command uses registration tokens as the primary method. Registration tokens can be obtained from [https://auth.veilnet.app](https://auth.veilnet.app).
 
 ### 3. Verify Your Connection
 
@@ -323,10 +327,11 @@ sudo ./veilnet-conflux remove
 
 ### Docker with Custom Configuration
 ```bash
+# Using registration token (primary method)
 docker run -d \
   --name veilnet-conflux \
   --privileged \
-  -e VEILNET_TOKEN="your-token" \
+  -e VEILNET_REGISTRATION_TOKEN="your-registration-token" \
   -e VEILNET_PORTAL="false" \
   veilnet/conflux:nats-0.0.6
 ```
@@ -351,6 +356,72 @@ The VeilNet Conflux automatically configures your network:
 
 - **Rift Mode** (default): Routes all traffic through the VeilNet network
 - **Portal Mode** (`-p` flag): Acts as a gateway, forwarding traffic from veilnet to other devices or networks
+
+### K3s Deployment with VeilNet
+
+When deploying a K3s cluster using VeilNet as the internal interface, you need to first set up VeilNet using the CLI, then configure K3s to use the VeilNet interface for cluster networking. This ensures that all cluster communication happens over the VeilNet network.
+
+**Prerequisites:**
+1. VeilNet Conflux must be running using the CLI `register` command
+2. Obtain the VeilNet IP address assigned to the `veilnet` interface
+
+**Step 1: Set up VeilNet using CLI**
+
+First, register and start VeilNet on each node:
+```bash
+# Register with a registration token
+sudo ./veilnet-conflux register \
+  -t your-registration-token
+```
+
+**Step 2: Get the VeilNet IP:**
+```bash
+# On Linux
+ip addr show veilnet
+
+# On macOS
+ifconfig veilnet
+
+# Extract the IP address (e.g., 10.128.1.2)
+```
+
+**Step 3: Install K3s with VeilNet Configuration**
+
+**For Master Node:**
+
+```bash
+curl -sfL https://get.k3s.io | \
+INSTALL_K3S_EXEC="
+  --node-ip <master_veilnet_ip> \
+  --advertise-address <master_veilnet_ip> \
+  --node-external-ip <master_veilnet_ip> \
+  --bind-address <master_veilnet_ip> \
+  --tls-san <master_veilnet_ip> \
+  --flannel-iface veilnet \
+  --node-name veilnet-demo-master
+" sh -
+```
+
+**For Agent Node:**
+
+```bash
+curl -sfL https://get.k3s.io | \
+K3S_URL="https://<master_veilnet_ip>:6443" \
+K3S_TOKEN="<paste-token>" \
+INSTALL_K3S_EXEC="
+  --node-ip <agent_veilnet_ip>
+  --flannel-iface veilnet
+  --node-name <agent-name>
+" sh -
+```
+
+**Verify Configuration:**
+```bash
+# Check K3s is using VeilNet IP
+sudo k3s kubectl get nodes -o wide
+```
+
+> **Note**: Ensure all nodes in the K3s cluster have VeilNet connectivity and can reach each other via their VeilNet IPs. VeilNet must be running on each node before installing K3s.
 
 ## Monitoring and Maintenance
 
