@@ -6,12 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -70,14 +68,12 @@ func (api *API) Run() error {
 		tag := os.Getenv("VEILNET_CONFLUX_TAG")
 		cidr := os.Getenv("VEILNET_CONFLUX_CIDR")
 		portal := os.Getenv("VEILNET_PORTAL") == "true"
-		subnets := os.Getenv("VEILNET_CONFLUX_SUBNETS")
 		register = Register{
 			Tag:      tag,
 			Cidr:     cidr,
 			Guardian: guardian,
 			Token:    token,
 			Portal:   portal,
-			Subnets:  subnets,
 		}
 	}
 	if register.Guardian != "" || register.Token != "" {
@@ -192,53 +188,6 @@ func (api *API) register(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"details": "Failed to parse register response"})
 	}
 
-	// Add subnets to the conflux
-	if request.Subnets != "" {
-		// Split the subnets by comma
-		subnets := strings.Split(request.Subnets, ",")
-		for _, subnet := range subnets {
-			// Parse the subnet
-			_, ipnet, err := net.ParseCIDR(subnet)
-			if err != nil {
-				veilnet.Logger.Sugar().Warnf("failed to parse subnet %s: %v", subnet, err)
-				continue
-			}
-			// Marshal the request body
-			body, err := json.Marshal(map[string]string{"conflux_id": confluxToken.ConfluxID, "subnet": subnet, "tag": request.Tag})
-			if err != nil {
-				veilnet.Logger.Sugar().Warnf("failed to marshal request body: %v", err)
-				continue
-			}
-			// Create the request
-			path := fmt.Sprintf("%s/conflux/register/local-network", request.Guardian)
-			req, err := http.NewRequest("POST", path, bytes.NewBuffer(body))
-			if err != nil {
-				veilnet.Logger.Sugar().Warnf("failed to create local network request: %v", err)
-				continue
-			}
-			// Set the Authorization header
-			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", request.Token))
-			req.Header.Set("Content-Type", "application/json")
-			// Make the request
-			resp, err := client.Do(req)
-			if err != nil {
-				veilnet.Logger.Sugar().Warnf("failed to add local network: %v", err)
-				continue
-			}
-			defer resp.Body.Close()
-			// Read the response body
-			if resp.StatusCode != http.StatusOK {
-				body, err := io.ReadAll(resp.Body)
-				if err != nil {
-					veilnet.Logger.Sugar().Warnf("failed to read local network response body: %v", err)
-					continue
-				}
-				veilnet.Logger.Sugar().Warnf("failed to add local network: %s: %s", resp.Status, string(body))
-				continue
-			}
-			veilnet.Logger.Sugar().Infof("added local network %s to conflux %s", ipnet.String(), confluxToken.ConfluxID)
-		}
-	}
 	// Write the registration data to file
 	tmpDir, err := os.UserConfigDir()
 	if err != nil {

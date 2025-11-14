@@ -16,7 +16,6 @@ type Register struct {
 	Guardian   string `short:"g" help:"The Guardian URL (Authentication Server), default: https://guardian.veilnet.app" default:"https://guardian.veilnet.app" env:"VEILNET_GUARDIAN" json:"guardian"`
 	Portal     bool   `short:"p" help:"Enable portal mode, default: false" default:"false" env:"VEILNET_PORTAL" json:"portal"`
 	ID         string `kong:"-" json:"id"`
-	Subnets    string `help:"The subnets to be forwarded by the conflux , separated by comma, e.g. 10.128.0.0/16,10.129.0.0/16" env:"VEILNET_CONFLUX_SUBNETS" json:"subnets"`
 }
 
 func (cmd *Register) Run() error {
