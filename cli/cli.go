@@ -142,6 +142,10 @@ func (cmd *Docker) Run() error {
 		return fmt.Errorf("failed to read response body: %v", err)
 	}
 
+	if !(resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK) {
+		return fmt.Errorf("failed to register conflux: %s: %s", resp.Status, string(body))
+	}
+
 	// Parse the response body
 	var confluxToken ConfluxToken
 	err = json.Unmarshal(body, &confluxToken)
