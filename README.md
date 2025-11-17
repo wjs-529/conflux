@@ -163,6 +163,7 @@ The VeilNet Conflux supports multiple commands:
 | CIDR | `--cidr` | The CIDR to be used by the conflux | No | - |
 | Tag | `--tag` | Optional tag for the conflux | No | - |
 | Subnets | `--subnets` | The subnets to be forwarded by the conflux, separated by comma (e.g. 10.128.0.0/16,10.129.0.0/16) | No | - |
+| Teams | `--teams` | The teams to be associated with the conflux, separated by comma, e.g. team1,team2 | No | - |
 
 #### `down` Command - Stop the Conflux
 
@@ -188,6 +189,7 @@ Stops the currently running conflux service.
 | Tag | `--tag` | The tag for the conflux | No | - |
 | CIDR | `--cidr` | The CIDR of the conflux | No | - |
 | Subnets | `--subnets` | The subnets to be forwarded by the conflux, separated by comma (e.g. 10.128.0.0/16,10.129.0.0/16) | No | - |
+| Teams | `--teams` | The teams to be associated with the conflux, separated by comma, e.g. team1,team2 | No | - |
 
 #### `unregister` Command - Unregister the Conflux
 
@@ -208,6 +210,7 @@ Unregisters the conflux and stops the service. This command takes no parameters.
 | `VEILNET_CONFLUX_TAG` | Optional tag for the conflux | No | - |
 | `VEILNET_CONFLUX_CIDR` | The CIDR to be used by the conflux (for `register`) | No | - |
 | `VEILNET_CONFLUX_SUBNETS` | The subnets to be forwarded by the conflux, separated by comma (for `register` and `docker`) | No | - |
+| `VEILNET_CONFLUX_TEAMS` | The teams to be associated with the conflux, separated by comma (for `register` and `docker`) | No | - |
 
 ### Configuration Priority
 
