@@ -343,7 +343,7 @@ func (c *conflux) ConfigHost(ip, netmask string) error {
 				return
 			case subnet := <-c.anchor.PlaneNetworksAddQueue:
 
-				cmd := exec.Command("route", "-n", "add", subnet, "via", ip, "dev", "veilnet")
+				cmd := exec.Command("route", "-n", "add", subnet, "-interface", "veilnet", "-hopcount", "5")
 				out, err := cmd.CombinedOutput()
 				if err != nil {
 					veilnet.Logger.Sugar().Warnf("failed to set plane local network route: %s", string(out))
@@ -360,7 +360,7 @@ func (c *conflux) ConfigHost(ip, netmask string) error {
 			case <-c.anchor.Ctx.Done():
 				return
 			case subnet := <-c.anchor.PlaneNetworksRemoveQueue:
-				cmd := exec.Command("route", "-n", "del", subnet, "via", ip, "dev", "veilnet")
+				cmd := exec.Command("route", "-n", "del", subnet, "-interface", "veilnet")
 				out, err := cmd.CombinedOutput()
 				if err != nil {
 					veilnet.Logger.Sugar().Warnf("failed to remove plane local network route: %s", string(out))

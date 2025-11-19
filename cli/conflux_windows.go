@@ -517,7 +517,7 @@ func (c *conflux) ConfigHost(ip, netmask string) error {
 				}
 				ip := strings.Split(subnet, "/")[0]
 				netmask := fmt.Sprintf("%d.%d.%d.%d", ipNet.Mask[0], ipNet.Mask[1], ipNet.Mask[2], ipNet.Mask[3])
-				cmd := exec.Command("route", "add", ip, "mask", netmask, ip, "if", strconv.Itoa(iface.Index))
+				cmd := exec.Command("route", "add", ip, "mask", netmask, ip, "metric", "5", "if", strconv.Itoa(iface.Index))
 				out, err := cmd.CombinedOutput()
 				if err != nil {
 					veilnet.Logger.Sugar().Warnf("failed to set plane local network route: %s", string(out))

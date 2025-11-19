@@ -52,8 +52,8 @@ type conflux struct {
 	ipForwardEnabled bool
 	metricsServer    *http.Server
 
-	anchorMutex     sync.Mutex
-	anchorOnce      sync.Once
+	anchorMutex sync.Mutex
+	anchorOnce  sync.Once
 }
 
 func newConflux() *conflux {
@@ -487,7 +487,7 @@ func (c *conflux) ConfigHost(ip, netmask string) error {
 			case <-c.anchor.Ctx.Done():
 				return
 			case subnet := <-c.anchor.PlaneNetworksAddQueue:
-				cmd := exec.Command("ip", "route", "add", subnet, "via", ip, "dev", "veilnet")
+				cmd := exec.Command("ip", "route", "add", subnet, "via", ip, "dev", "veilnet", "metric", "5")
 				out, err := cmd.CombinedOutput()
 				if err != nil {
 					veilnet.Logger.Sugar().Warnf("failed to set plane local network route: %s", string(out))
