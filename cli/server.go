@@ -195,7 +195,9 @@ func (api *API) register(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"details": "Failed to get user config directory"})
 	}
 	confluxDir := filepath.Join(tmpDir, "conflux")
-	os.MkdirAll(confluxDir, 0755)
+	if err := os.MkdirAll(confluxDir, 0755); err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"details": "Failed to create conflux directory"})
+	}
 	confluxFile := filepath.Join(confluxDir, "conflux.json")
 	request.ID = confluxToken.ConfluxID
 	resitrationData, err := json.Marshal(request)
@@ -229,23 +231,32 @@ func (api *API) unregister(c echo.Context) error {
 	tmpDir, err := os.UserConfigDir()
 	if err != nil {
 		veilnet.Logger.Sugar().Errorf("failed to get user config directory: %v", err)
+		return c.JSON(http.StatusInternalServerError, echo.Map{"details": "Failed to get user config directory"})
 	}
 	confluxDir := filepath.Join(tmpDir, "conflux")
 	confluxFile := filepath.Join(confluxDir, "conflux.json")
 	registrationData, err := os.ReadFile(confluxFile)
 	if err != nil {
 		veilnet.Logger.Sugar().Errorf("failed to read registration data: %v", err)
+		return c.JSON(http.StatusInternalServerError, echo.Map{"details": "Failed to read registration data"})
 	}
 	var register Register
 	err = json.Unmarshal(registrationData, &register)
 	if err != nil {
 		veilnet.Logger.Sugar().Errorf("failed to unmarshal registration data: %v", err)
+		return c.JSON(http.StatusInternalServerError, echo.Map{"details": "Failed to parse registration data"})
+	}
+
+	// Validate required fields
+	if register.Guardian == "" || register.ID == "" || register.Token == "" {
+		return c.JSON(http.StatusBadRequest, echo.Map{"details": "Invalid registration data: missing required fields"})
 	}
 
 	path := fmt.Sprintf("%s/conflux/unregister?conflux_id=%s", register.Guardian, register.ID)
 	req, err := http.NewRequest("DELETE", path, nil)
 	if err != nil {
 		veilnet.Logger.Sugar().Errorf("failed to create unregister request: %v", err)
+		return c.JSON(http.StatusInternalServerError, echo.Map{"details": "Failed to create unregister request"})
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", register.Token))
 	req.Header.Set("Content-Type", "application/json")
@@ -253,14 +264,17 @@ func (api *API) unregister(c echo.Context) error {
 	resp, err := client.Do(req)
 	if err != nil {
 		veilnet.Logger.Sugar().Errorf("failed to make unregister request: %v", err)
+		return c.JSON(http.StatusInternalServerError, echo.Map{"details": fmt.Sprintf("Failed to make unregister request: %v", err)})
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // Now safe because we return early on error
+
 	if resp.StatusCode != http.StatusOK {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			veilnet.Logger.Sugar().Errorf("failed to read unregister response body: %v", err)
+		} else {
+			veilnet.Logger.Sugar().Errorf("unregister failed with status %d: %s", resp.StatusCode, string(body))
 		}
-		veilnet.Logger.Sugar().Errorf("unregister failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
 	// Stop the current VeilNet
