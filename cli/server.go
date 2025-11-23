@@ -118,7 +118,7 @@ func (api *API) up(c echo.Context) error {
 
 	if err := api.conflux.StartVeilNet(request.Guardian, request.Token, request.Portal); err != nil {
 		api.conflux.StopVeilNet()
-		return c.JSON(http.StatusInternalServerError, echo.Map{"details": "Failed to start VeilNet"})
+		return c.JSON(http.StatusInternalServerError, echo.Map{"details": fmt.Sprintf("Failed to start VeilNet: %v", err)})
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{"details": "VeilNet started"})
