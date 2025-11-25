@@ -43,9 +43,8 @@ func (cmd *Up) Run() error {
 
 func (cmd *Up) loadUpData() {
 	// First load the environment data from file (if exists)
-	tmpDir, err := os.UserConfigDir()
+	confluxDir, err := getConfigDir()
 	if err == nil {
-		confluxDir := filepath.Join(tmpDir, "conflux")
 		envFile := filepath.Join(confluxDir, "up.json")
 		envDataFile, err := os.ReadFile(envFile)
 		if err == nil {
@@ -70,12 +69,11 @@ func (cmd *Up) loadUpData() {
 
 func (cmd *Up) saveUpData() error {
 	// Write the environment data to file
-	tmpDir, err := os.UserConfigDir()
+	confluxDir, err := getConfigDir()
 	if err != nil {
-		Logger.Sugar().Errorf("Failed to get user config directory: %v", err)
-		return fmt.Errorf("failed to get user config directory: %v", err)
+		Logger.Sugar().Errorf("Failed to get config directory: %v", err)
+		return fmt.Errorf("failed to get config directory: %v", err)
 	}
-	confluxDir := filepath.Join(tmpDir, "conflux")
 	if err := os.MkdirAll(confluxDir, 0755); err != nil {
 		Logger.Sugar().Errorf("Failed to create conflux directory: %v", err)
 		return fmt.Errorf("failed to create conflux directory: %v", err)

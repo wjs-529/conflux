@@ -61,12 +61,11 @@ func (cmd *Unregister) Run() error {
 	}
 
 	// Remove the conflux file
-	tmpDir, err := os.UserConfigDir()
+	confluxDir, err := getConfigDir()
 	if err != nil {
-		Logger.Sugar().Errorf("Failed to get user config directory: %v", err)
-		return fmt.Errorf("failed to get user config directory: %v", err)
+		Logger.Sugar().Errorf("Failed to get config directory: %v", err)
+		return fmt.Errorf("failed to get config directory: %v", err)
 	}
-	confluxDir := filepath.Join(tmpDir, "conflux")
 	confluxFile := filepath.Join(confluxDir, "conflux.json")
 	err = os.Remove(confluxFile)
 	if err != nil {

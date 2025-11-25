@@ -110,9 +110,8 @@ func (cmd *Register) register() (*ConfluxToken, error) {
 
 func (cmd *Register) loadRegistrationData() {
 	// First load the registration data from file (if exists)
-	tmpDir, err := os.UserConfigDir()
+	confluxDir, err := getConfigDir()
 	if err == nil {
-		confluxDir := filepath.Join(tmpDir, "conflux")
 		confluxFile := filepath.Join(confluxDir, "conflux.json")
 		registrationDataFile, err := os.ReadFile(confluxFile)
 		if err == nil {
@@ -146,12 +145,11 @@ func (cmd *Register) loadRegistrationData() {
 
 func (cmd *Register) saveRegistrationData(confluxToken *ConfluxToken) error {
 	// Write the registration data to file
-	tmpDir, err := os.UserConfigDir()
+	confluxDir, err := getConfigDir()
 	if err != nil {
-		Logger.Sugar().Errorf("Failed to get user config directory: %v", err)
-		return fmt.Errorf("failed to get user config directory: %v", err)
+		Logger.Sugar().Errorf("Failed to get config directory: %v", err)
+		return fmt.Errorf("failed to get config directory: %v", err)
 	}
-	confluxDir := filepath.Join(tmpDir, "conflux")
 	if err := os.MkdirAll(confluxDir, 0755); err != nil {
 		Logger.Sugar().Errorf("Failed to create conflux directory: %v", err)
 		return fmt.Errorf("failed to create conflux directory: %v", err)

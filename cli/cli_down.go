@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
 )
 
 type Down struct{}
@@ -14,11 +13,10 @@ func (cmd *Down) Run() error {
 	conflux.Remove()
 
 	// Remove the up.json file
-	tmpDir, err := os.UserConfigDir()
+	confluxDir, err := getConfigDir()
 	if err != nil {
-		Logger.Sugar().Warnf("Failed to get user config directory: %v", err)
+		Logger.Sugar().Warnf("Failed to get config directory: %v", err)
 	} else {
-		confluxDir := filepath.Join(tmpDir, "conflux")
 		envFile := filepath.Join(confluxDir, "up.json")
 		err = os.Remove(envFile)
 		if err != nil && !os.IsNotExist(err) {
