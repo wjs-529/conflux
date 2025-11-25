@@ -153,12 +153,12 @@ func (cmd *Register) saveRegistrationData(confluxToken *ConfluxToken) error {
 	}
 	confluxFile := filepath.Join(confluxDir, "conflux.json")
 	cmd.ID = confluxToken.ConfluxID
-	resitrationData, err := json.Marshal(cmd)
+	registrationData, err := json.Marshal(cmd)
 	if err != nil {
 		veilnet.Logger.Sugar().Errorf("Failed to marshal registration data: %v", err)
 		return fmt.Errorf("failed to marshal registration data: %v", err)
 	}
-	err = os.WriteFile(confluxFile, resitrationData, 0644)
+	err = os.WriteFile(confluxFile, registrationData, 0644)
 	if err != nil {
 		veilnet.Logger.Sugar().Errorf("Failed to write registration data: %v", err)
 		return fmt.Errorf("failed to write registration data: %v", err)
