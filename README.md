@@ -34,6 +34,28 @@ When a VeilNet Conflux instance starts:
 
 VeilNet Conflux instances can automatically serve as relays for other verified instances without any configuration, significantly reducing the need for external relays.
 
+## How VeilNet Compares
+
+Not all secure networks are created equal. The following table compares VeilNet with traditional VPN solutions:
+
+| Feature | WireGuard | Tailscale | VeilNet |
+|---------|-----------|-----------|---------|
+| **Architecture** | Centralised Hub | P2P Mesh | **Decentralised Non-Mesh Overlay** |
+| **Encryption** | ChaCha20 & Poly1035 | ChaCha20 & Poly1035 | **Kyber KEM & Dilithium DSA & AES-GCM 256** |
+| **Routing** | Static Route Table | Static Route Table | **Reinforcement Learning** |
+| **Resilience** | Single-point failures | No alternative route if P2P fails | **Dynamic Self-recovering Route** |
+| **Scalability Complexity** | Not possible for scaling | Exponential increase | **Linear increase** |
+| **Tunneling** | Static Tunnel | Static Tunnel + NAT Traversal | **Ephemeral Link + WebRTC** |
+| **Set-up** | Manual Config | Central Coordination Server | **Self-config with decentralised control plane** |
+| **Software Defined Network** | N/A | Limited | **AI-Powered** |
+| **Geo-location Control** | N/A | N/A | **Yes** |
+| **Deployment Complexity** | High | Medium | **Easy** |
+| **Access Control** | N/A | Complex Json-based & Subnet Level | **Easy Identity Affinity & Packet Level** |
+| **Current Multi-link Transmission** | N/A | N/A | **Yes** |
+| **Peer Relay / Multi-Hop** | N/A | Manual Config & Experimental | **Self-Learning & Natively Supported** |
+
+For more details, visit the [VeilNet homepage](https://veilnet.net/).
+
 ## How Connectivity is Established
 
 VeilNet establishes connectivity through a decentralized, ephemeral architecture that differs fundamentally from traditional overlay VPNs. For a comparison with other overlay VPN solutions, see the [official comparison documentation](https://veilnet.net/docs/veilnet-vs-overlay-vpns/).
@@ -44,7 +66,7 @@ All Conflux instances connect to **VeilNet Master**, the control channel (not a 
 
 ```mermaid
 graph TB
-    subgraph "Control Channel (NATS Super Cluster)"
+    subgraph "Control Channel"
         Master[VeilNet Master<br/>Message Broker Channel]
     end
     
