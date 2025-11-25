@@ -40,12 +40,12 @@ VeilNet establishes connectivity through a decentralized, ephemeral architecture
 
 ### Control Channel (VeilNet Master)
 
-All Conflux instances connect to **VeilNet Master**, the control channel message broker implemented as a NATS super cluster. The Master does not control the network; it simply relays control messages between Conflux instances. This allows nodes to exchange routing information, discover paths, and coordinate without a central coordination server managing network state.
+All Conflux instances connect to **VeilNet Master**, the control channel (not a server entity) implemented as a NATS super cluster. The Master is a message broker channel that simply relays control messages between Conflux instances. It does not control the network, manage network state, or make routing decisions. This allows nodes to exchange routing information, discover paths, and coordinate without a central coordination server managing network state.
 
 ```mermaid
 graph TB
-    subgraph "VeilNet Master"
-        Master[Control Channel<br/>Message Broker]
+    subgraph "Control Channel (NATS Super Cluster)"
+        Master[VeilNet Master<br/>Message Broker Channel]
     end
     
     subgraph "Conflux Instances"
@@ -55,10 +55,15 @@ graph TB
         C4[Conflux D]
     end
     
-    C1 <-->|Control Messages| Master
-    C2 <-->|Control Messages| Master
-    C3 <-->|Control Messages| Master
-    C4 <-->|Control Messages| Master
+    C1 -.->|Control Messages| Master
+    C2 -.->|Control Messages| Master
+    C3 -.->|Control Messages| Master
+    C4 -.->|Control Messages| Master
+    
+    C1 <-->|Direct Data<br/>Communication| C2
+    C1 <-->|Direct Data<br/>Communication| C3
+    C2 <-->|Direct Data<br/>Communication| C4
+    C3 <-->|Direct Data<br/>Communication| C4
     
     style Master fill:#4a90e2,color:#fff
     style C1 fill:#f5a623,color:#fff
@@ -67,7 +72,7 @@ graph TB
     style C4 fill:#f5a623,color:#fff
 ```
 
-**Note**: The Master only relays control messages. It does not manage network state or routing decisions.
+**Note**: VeilNet Master is a **channel**, not a server entity. It only relays control messages and does not manage network state or routing decisions.
 
 ### Data Transmission Flow
 
