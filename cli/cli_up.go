@@ -1,8 +1,12 @@
 package cli
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
-	"strconv"
+	"path/filepath"
+
+	"github.com/veil-net/veilnet"
 )
 
 type Up struct {
@@ -14,12 +18,70 @@ type Up struct {
 func (cmd *Up) Run() error {
 	conflux := NewConflux()
 	conflux.Remove()
-	os.Setenv("VEILNET_GUARDIAN", cmd.Guardian)
-	os.Setenv("VEILNET_CONFLUX_TOKEN", cmd.Token)
-	os.Setenv("VEILNET_PORTAL", strconv.FormatBool(cmd.Portal))
-	err := conflux.Install()
+
+	// Save environment variables to file
+	err := cmd.saveEnvData()
 	if err != nil {
 		return err
 	}
+
+	err = conflux.Install()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (cmd *Up) loadEnvData() {
+	// First load the environment data from ENV
+	cmd.Guardian = os.Getenv("VEILNET_GUARDIAN")
+	cmd.Token = os.Getenv("VEILNET_CONFLUX_TOKEN")
+	cmd.Portal = os.Getenv("VEILNET_PORTAL") == "true"
+
+	// Load the environment data from file
+	tmpDir, err := os.UserConfigDir()
+	if err != nil {
+		veilnet.Logger.Sugar().Warnf("Failed to get user config directory, using environment variables: %v", err)
+		return
+	}
+	confluxDir := filepath.Join(tmpDir, "conflux")
+	envFile := filepath.Join(confluxDir, "up.json")
+	envDataFile, err := os.ReadFile(envFile)
+	if err != nil {
+		veilnet.Logger.Sugar().Warnf("Failed to read environment data from file, using environment variables: %v", err)
+		return
+	}
+	var up Up
+	err = json.Unmarshal(envDataFile, &up)
+	if err != nil {
+		veilnet.Logger.Sugar().Warnf("Failed to unmarshal environment data from file, using environment variables: %v", err)
+		return
+	}
+}
+
+func (cmd *Up) saveEnvData() error {
+	// Write the environment data to file
+	tmpDir, err := os.UserConfigDir()
+	if err != nil {
+		veilnet.Logger.Sugar().Errorf("Failed to get user config directory: %v", err)
+		return fmt.Errorf("failed to get user config directory: %v", err)
+	}
+	confluxDir := filepath.Join(tmpDir, "conflux")
+	if err := os.MkdirAll(confluxDir, 0755); err != nil {
+		veilnet.Logger.Sugar().Errorf("Failed to create conflux directory: %v", err)
+		return fmt.Errorf("failed to create conflux directory: %v", err)
+	}
+	envFile := filepath.Join(confluxDir, "up.json")
+	envData, err := json.Marshal(cmd)
+	if err != nil {
+		veilnet.Logger.Sugar().Errorf("Failed to marshal environment data: %v", err)
+		return fmt.Errorf("failed to marshal environment data: %v", err)
+	}
+	err = os.WriteFile(envFile, envData, 0644)
+	if err != nil {
+		veilnet.Logger.Sugar().Errorf("Failed to write environment data: %v", err)
+		return fmt.Errorf("failed to write environment data: %v", err)
+	}
+	veilnet.Logger.Sugar().Infof("Environment data written to %s", envFile)
 	return nil
 }

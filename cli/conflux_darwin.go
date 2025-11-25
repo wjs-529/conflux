@@ -53,12 +53,12 @@ func newConflux() *conflux {
 
 func (c *conflux) Run() error {
 	// Check if conflux token is provided
-	token := os.Getenv("VEILNET_CONFLUX_TOKEN")
-	guardian := os.Getenv("VEILNET_GUARDIAN")
-	portal := os.Getenv("VEILNET_PORTAL") == "true"
-	if token != "" && guardian != "" {
+	up := Up{}
+	up.loadEnvData()
 
-		if portal {
+	if up.Token != "" && up.Guardian != "" {
+
+		if up.Portal {
 			veilnet.Logger.Sugar().Errorf("Portal mode is not supported on macOS")
 			return fmt.Errorf("portal mode is not supported on macOS")
 		}
@@ -68,7 +68,7 @@ func (c *conflux) Run() error {
 
 		// Start the anchor
 		c.anchor = veilnet.NewAnchor()
-		err := c.anchor.Start(guardian, token, false)
+		err := c.anchor.Start(up.Guardian, up.Token, false)
 		if err != nil {
 			veilnet.Logger.Sugar().Errorf("failed to start VeilNet: %v", err)
 			return err

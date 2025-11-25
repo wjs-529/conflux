@@ -52,17 +52,17 @@ func newConflux() *conflux {
 
 func (c *conflux) Run() error {
 	// Check if conflux token is provided
-	token := os.Getenv("VEILNET_CONFLUX_TOKEN")
-	guardian := os.Getenv("VEILNET_GUARDIAN")
-	portal := os.Getenv("VEILNET_PORTAL") == "true"
-	if token != "" && guardian != "" {
+	up := Up{}
+	up.loadEnvData()
+
+	if up.Token != "" && up.Guardian != "" {
 
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer stop()
 
 		// Start the anchor
 		c.anchor = veilnet.NewAnchor()
-		err := c.anchor.Start(guardian, token, portal)
+		err := c.anchor.Start(up.Guardian, up.Token, up.Portal)
 		if err != nil {
 			veilnet.Logger.Sugar().Errorf("failed to start VeilNet: %v", err)
 			return err
