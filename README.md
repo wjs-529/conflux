@@ -235,12 +235,9 @@ sequenceDiagram
     CF1->>CF1: Create Tether
     CF1->>CF2: Encrypted Data
     CF2->>CF2: Create Ingresser
-    CF2->>CF2: Decrypt & Forward
-    CF2->>CF2: Create Egresser
-    CF2->>CF2: Establish Stream
     CF2->>CF2: Find Route (to CF3)
     CF2->>CF2: Create Tether
-    CF2->>CF3: Encrypted Data
+    CF2->>CF3: Forward Encrypted Data
     CF3->>CF3: Create Ingresser
     CF3->>CF3: Decrypt
     CF3->>TUN2: Write Packet
