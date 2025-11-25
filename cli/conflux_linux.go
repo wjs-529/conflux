@@ -21,6 +21,8 @@ import (
 const SystemdUnitTemplate = `[Unit]
 Description=VeilNet Service
 After=network.target
+Wants=network.target
+Before=multi-user.target
 
 [Service]
 Type=simple
@@ -39,9 +41,9 @@ WantedBy=multi-user.target
 `
 
 type conflux struct {
-	anchor           *veilnet.Anchor
-	api              *API
-	metricsServer    *http.Server
+	anchor        *veilnet.Anchor
+	api           *API
+	metricsServer *http.Server
 
 	anchorMutex sync.Mutex
 	anchorOnce  sync.Once
