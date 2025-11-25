@@ -62,11 +62,11 @@ graph TB
     
     Master -.->|Relays Messages| Master
     
-    style Master fill:#e1f5ff
-    style C1 fill:#fff4e1
-    style C2 fill:#fff4e1
-    style C3 fill:#fff4e1
-    style C4 fill:#fff4e1
+    style Master fill:#4a90e2,color:#fff
+    style C1 fill:#f5a623,color:#fff
+    style C2 fill:#f5a623,color:#fff
+    style C3 fill:#f5a623,color:#fff
+    style C4 fill:#f5a623,color:#fff
 ```
 
 **Note**: The Master only relays control messages. It does not manage network state or routing decisions.
@@ -111,12 +111,12 @@ flowchart LR
     RTE -->|Create| TTH
     TTH -->|Encrypted Data| TTH2
     
-    style TUN fill:#e1f5ff
-    style EGR fill:#fff4e1
-    style STR fill:#e8f5e9
-    style RTE fill:#f3e5f5
-    style TTH fill:#fff9c4
-    style TTH2 fill:#fff9c4
+    style TUN fill:#4a90e2,color:#fff
+    style EGR fill:#f5a623,color:#fff
+    style STR fill:#7ed321,color:#000
+    style RTE fill:#9013fe,color:#fff
+    style TTH fill:#f8e71c,color:#000
+    style TTH2 fill:#f8e71c,color:#000
 ```
 
 #### Inbound (Ingress) Path
@@ -149,11 +149,11 @@ flowchart LR
     ING -->|Decrypt| DCR
     DCR -->|Write Packet| TUN
     
-    style TTH1 fill:#fff9c4
-    style TTH2 fill:#fff9c4
-    style ING fill:#fff4e1
-    style DCR fill:#e8f5e9
-    style TUN fill:#e1f5ff
+    style TTH1 fill:#f8e71c,color:#000
+    style TTH2 fill:#f8e71c,color:#000
+    style ING fill:#f5a623,color:#fff
+    style DCR fill:#7ed321,color:#000
+    style TUN fill:#4a90e2,color:#fff
 ```
 
 ### Key Characteristics
@@ -175,10 +175,10 @@ graph LR
     EGR1 -->|Stream A→B| ING2
     EGR2 -->|Stream B→A| ING1
     
-    style EGR1 fill:#fff4e1
-    style ING1 fill:#fff4e1
-    style EGR2 fill:#e1f5ff
-    style ING2 fill:#e1f5ff
+    style EGR1 fill:#f5a623,color:#fff
+    style ING1 fill:#f5a623,color:#fff
+    style EGR2 fill:#4a90e2,color:#fff
+    style ING2 fill:#4a90e2,color:#fff
 ```
 
 - **Resource Sharing**: Streams, routes, and tethers may be shared by multiple egressers or ingressers, improving efficiency and reducing overhead.
@@ -198,12 +198,12 @@ graph TB
     STR --> RTE
     RTE --> TTH
     
-    style STR fill:#e8f5e9
-    style RTE fill:#f3e5f5
-    style TTH fill:#fff9c4
-    style EGR1 fill:#fff4e1
-    style EGR2 fill:#fff4e1
-    style EGR3 fill:#fff4e1
+    style STR fill:#7ed321,color:#000
+    style RTE fill:#9013fe,color:#fff
+    style TTH fill:#f8e71c,color:#000
+    style EGR1 fill:#f5a623,color:#fff
+    style EGR2 fill:#f5a623,color:#fff
+    style EGR3 fill:#f5a623,color:#fff
 ```
 
 - **WebRTC Data Channels**: Since WebRTC handles data encapsulation and segmentation, the TUN interface created by VeilNet has an MTU of 1500 (with jumbo frame support planned for the future).
