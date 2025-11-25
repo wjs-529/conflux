@@ -1,556 +1,623 @@
 # VeilNet Conflux
 
-A lightweight software that connects to the VeilNet network through secure TUN interfaces. The VeilNet Conflux establishes encrypted connections to VeilNet, enabling secure, private networking for your applications and devices.
+VeilNet Conflux is a networking service that connects to VeilNet, a decentralized post-quantum secure network. This guide covers installation and deployment options.
 
-By running the VeilNet Conflux, you can access the decentralized VeilNet network, bypass network restrictions, and maintain privacy while browsing the internet (Rift Mode, requires at least one peer portal if in private plane).
+## How It Works
 
-> **⚠️ Note**: macOS (Darwin) support is experimental. Portal mode is not supported on Windows.
+VeilNet is an ephemeral secure network that differs fundamentally from traditional Peer-to-Peer mesh overlay VPN networks. For detailed information, see the [official documentation](https://veilnet.net/docs).
 
-## Features
+### Key Components
 
-- **Secure TUN Interface**: Creates a virtual network interface for encrypted traffic
-- **Privacy-First**: All traffic is encrypted and routed through the VeilNet network
-- **Cross-Platform**: Support for Linux, macOS, Windows, and ARM architectures
-- **Easy Configuration**: Simple command-line interface with environment variable support
-- **Graceful Shutdown**: Proper cleanup of network interfaces and routes
-- **Docker Support**: Containerized deployment with Docker and Docker Compose
-- **Portal Mode**: Support for both client and portal modes
-- **Control Plane**: NATS-based control plane
+- **VeilNet Master**: The control-channel message broker that enables the Reinforcement Learning routing algorithm used in the Anchor protocol.
+- **VeilNet Guardian**: The authentication server for both users and VeilNet Conflux nodes. User authentication relies on Supabase, while Conflux node authentication uses a JWT system with both long-lived and short-lived tokens.
+- **VeilNet Conflux**: The connector software (this project) that runs on virtual or physical machines, as well as container environments, to form the decentralized network.
 
-## Prerequisites
+### Key Differences from Traditional VPNs
 
-Before setting up your VeilNet Conflux, ensure you have:
+- **No Coordination Server**: VeilNet is a decentralized network with no central server managing network state. The network forms automatically through VeilNet Conflux nodes. Encryption keys and routing decisions are generated at runtime and never stored. Conflux nodes do not synchronize configuration files.
+- **Non-mesh and Ephemeral**: Data channels between nodes are created on demand and dissolve when idle. No connection is persistent. Multi-hop transmission is natively supported by the Anchor protocol, resulting in a topology that is never fixed or static.
+- **Post-Quantum Cryptography**: VeilNet uses Kyber Key Exchange Mechanism and Dilithium Digital Signature, providing post-quantum security. It uses symmetric encryption (AES-GCM-256) rather than asymmetric encryption, with no public or private keys.
 
-- **Operating System**: Linux, macOS, or Windows
-- **Root/Admin Access**: Required for TUN device creation and network configuration
-- **Network Connectivity**: Stable internet connection
-- **Guardian Account**: Access to the VeilNet Guardian service
-- **Registration Token**: A registration token from [https://auth.veilnet.app](https://auth.veilnet.app) (required for primary method using `register` command or `docker` command)
-- **Conflux Token** (for integration only): A conflux token from the Guardian service API. These tokens expire in 30 seconds and should only be used for programmatic integration. See [https://guardian.veilnet.app/docs#/](https://guardian.veilnet.app/docs#/) for API documentation.
+### How VeilNet Conflux Works
 
-> **Note**: macOS (Darwin) support is experimental and may require additional setup or troubleshooting.
+When a VeilNet Conflux instance starts:
 
-## Quick Start
+1. **Authentication**: The instance authenticates with VeilNet Guardian using a registration token or conflux token, receiving a certificate that permits joining the global control channel.
+2. **Network Formation**: The instance joins the decentralized network through the control channel (a NATS super cluster), exchanging information with other authenticated nodes at runtime.
+3. **Encryption & Routing**: 
+   - Each Conflux derives shared secrets locally using Kyber KEM
+   - Packets are authenticated using Dilithium digital signatures
+   - Routing uses a multi-agent cooperative reinforcement learning algorithm
+   - Routes are established dynamically: **streams** (logical secure channels), **routes** (multi-hop forwarding), and **tethers** (aggregated WebRTC data channels)
+4. **Access Control**: Identity-based access control is enforced at the Conflux instance level. Only verified instances may communicate; untrusted instances are silently ignored.
+5. **Self-Healing**: Conflux instances automatically handle load balancing and route switching, self-healing from network failures and guaranteeing data delivery unless the destination is offline.
 
-### 1. Choose Your Flow
+VeilNet Conflux instances can automatically serve as relays for other verified instances without any configuration, significantly reducing the need for external relays.
 
-- **Primary Method**: Use the `register` command (native) or `docker` command with a Registration Token to create and start a Conflux. Registration tokens can be obtained from [https://auth.veilnet.app](https://auth.veilnet.app). This is the recommended way to connect a machine.
-- **Integration Method**: The `up` command with a Conflux Token is for integration only. Conflux tokens expire in 30 seconds and should only be used for programmatic integration. For integration API documentation, see [https://guardian.veilnet.app/docs#/](https://guardian.veilnet.app/docs#/).
+## How Connectivity is Established
 
-### 2. Choose Your Deployment Method
+VeilNet establishes connectivity through a decentralized, ephemeral architecture that differs fundamentally from traditional overlay VPNs. For a comparison with other overlay VPN solutions, see the [official comparison documentation](https://veilnet.net/docs/veilnet-vs-overlay-vpns/).
 
-#### Option A: Native Installation (Recommended)
+### Control Channel (VeilNet Master)
 
-1. **Download the binary**:
-Download the binary from the releases page.
+All Conflux instances connect to **VeilNet Master**, the control channel message broker implemented as a NATS super cluster. The Master does not control the network; it simply relays control messages between Conflux instances. This allows nodes to exchange routing information, discover paths, and coordinate without a central coordination server managing network state.
 
-2. **Install as a system service (Recommended)**:
-```bash
-# Install the conflux as a system service
-sudo ./veilnet-conflux install
-
-# Start the service
-sudo ./veilnet-conflux start
-
-# Check service status
-sudo ./veilnet-conflux status
+```mermaid
+graph TB
+    subgraph "VeilNet Master (NATS Super Cluster)"
+        Master[Control Channel<br/>Message Broker]
+    end
+    
+    subgraph "Conflux Instances"
+        C1[Conflux A]
+        C2[Conflux B]
+        C3[Conflux C]
+        C4[Conflux D]
+    end
+    
+    C1 <-->|Control Messages| Master
+    C2 <-->|Control Messages| Master
+    C3 <-->|Control Messages| Master
+    C4 <-->|Control Messages| Master
+    
+    Master -.->|Relays Messages| Master
+    
+    style Master fill:#e1f5ff
+    style C1 fill:#fff4e1
+    style C2 fill:#fff4e1
+    style C3 fill:#fff4e1
+    style C4 fill:#fff4e1
 ```
 
-> **⚠️ Note**: The `install` command is not supported on macOS at the moment. On macOS, use the direct run method below.
+**Note**: The Master only relays control messages. It does not manage network state or routing decisions.
 
-3. **Run the conflux directly (Primary method)**:
+### Data Transmission Flow
+
+#### Outbound (Egress) Path
+
+When a Conflux instance needs to send data:
+
+1. **TUN Interface**: The Conflux reads packets from the TUN interface (MTU 1500, with jumbo frame support planned for the future).
+
+2. **Egresser Creation**: For each destination, the Conflux creates an **egresser** (outbound handler) that manages the transmission to that specific destination.
+
+3. **Stream Establishment**: The egresser establishes a secure **stream** via the Anchor protocol. A stream is a logical secure channel per destination.
+
+4. **Route Discovery**: The egresser finds a multi-hop or direct path as a **route** using the reinforcement learning routing algorithm. Routes can be:
+   - Direct (single hop)
+   - Multi-hop (through intermediate Conflux instances)
+
+5. **Tether Creation**: The egresser establishes a group of WebRTC data channels as a **tether** to the next hop. A tether aggregates multiple WebRTC data channels for improved performance and reliability.
+
+6. **Data Transmission**: The encrypted data is transmitted to the next hop through the tether.
+
+```mermaid
+flowchart LR
+    subgraph "Source Conflux"
+        TUN[TUN Interface<br/>MTU 1500]
+        EGR[Egresser<br/>per destination]
+        STR[Stream<br/>Secure Channel]
+        RTE[Route<br/>Multi-hop Path]
+        TTH[Tether<br/>WebRTC Channels]
+    end
+    
+    subgraph "Next Hop"
+        TTH2[Tether]
+    end
+    
+    TUN -->|Read Packet| EGR
+    EGR -->|Establish| STR
+    STR -->|Find Path| RTE
+    RTE -->|Create| TTH
+    TTH -->|Encrypted Data| TTH2
+    
+    style TUN fill:#e1f5ff
+    style EGR fill:#fff4e1
+    style STR fill:#e8f5e9
+    style RTE fill:#f3e5f5
+    style TTH fill:#fff9c4
+    style TTH2 fill:#fff9c4
+```
+
+#### Inbound (Ingress) Path
+
+When a Conflux instance receives data:
+
+1. **Tether Reception**: The Conflux receives data from a tether (WebRTC data channels).
+
+2. **Ingresser Creation**: For each stream, the Conflux creates an **ingresser** (inbound handler) that manages the reception from that specific source.
+
+3. **Decryption**: The ingresser decrypts the message using the shared secret derived via Kyber KEM.
+
+4. **TUN Write**: The decrypted packet is written to the TUN interface, making it available to the local network stack.
+
+```mermaid
+flowchart LR
+    subgraph "Previous Hop"
+        TTH1[Tether]
+    end
+    
+    subgraph "Destination Conflux"
+        TTH2[Tether<br/>WebRTC Channels]
+        ING[Ingresser<br/>per stream]
+        DCR[Decrypt<br/>Kyber KEM]
+        TUN[TUN Interface<br/>MTU 1500]
+    end
+    
+    TTH1 -->|Encrypted Data| TTH2
+    TTH2 -->|Receive| ING
+    ING -->|Decrypt| DCR
+    DCR -->|Write Packet| TUN
+    
+    style TTH1 fill:#fff9c4
+    style TTH2 fill:#fff9c4
+    style ING fill:#fff4e1
+    style DCR fill:#e8f5e9
+    style TUN fill:#e1f5ff
+```
+
+### Key Characteristics
+
+- **Uni-directional Streams**: Streams are uni-directional. Transmitting and receiving are independent streams, allowing for asymmetric routing and independent path optimization.
+
+```mermaid
+graph LR
+    subgraph "Conflux A"
+        EGR1[Egresser 1]
+        ING1[Ingresser 1]
+    end
+    
+    subgraph "Conflux B"
+        EGR2[Egresser 2]
+        ING2[Ingresser 2]
+    end
+    
+    EGR1 -->|Stream A→B| ING2
+    EGR2 -->|Stream B→A| ING1
+    
+    style EGR1 fill:#fff4e1
+    style ING1 fill:#fff4e1
+    style EGR2 fill:#e1f5ff
+    style ING2 fill:#e1f5ff
+```
+
+- **Resource Sharing**: Streams, routes, and tethers may be shared by multiple egressers or ingressers, improving efficiency and reducing overhead.
+
+```mermaid
+graph TB
+    subgraph "Shared Resources"
+        STR[Stream]
+        RTE[Route]
+        TTH[Tether]
+    end
+    
+    EGR1[Egresser 1] --> STR
+    EGR2[Egresser 2] --> STR
+    EGR3[Egresser 3] --> STR
+    
+    STR --> RTE
+    RTE --> TTH
+    
+    style STR fill:#e8f5e9
+    style RTE fill:#f3e5f5
+    style TTH fill:#fff9c4
+    style EGR1 fill:#fff4e1
+    style EGR2 fill:#fff4e1
+    style EGR3 fill:#fff4e1
+```
+
+- **WebRTC Data Channels**: Since WebRTC handles data encapsulation and segmentation, the TUN interface created by VeilNet has an MTU of 1500 (with jumbo frame support planned for the future).
+
+- **VXLAN-like Overlay**: This architecture makes VeilNet function like VXLAN but across the internet. Conflux provides access to all host networks, including:
+  - VXLAN networks
+  - CNI (Container Network Interface) networks
+  - Container networks
+  - Local networks
+
+### Multi-Hop Routing Example
+
+The following diagram illustrates how data flows through multiple hops in a VeilNet network:
+
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant TUN1 as TUN Interface<br/>(Source)
+    participant CF1 as Conflux A
+    participant CF2 as Conflux B<br/>(Relay)
+    participant CF3 as Conflux C<br/>(Destination)
+    participant TUN2 as TUN Interface<br/>(Destination)
+    
+    App->>TUN1: Send Packet
+    TUN1->>CF1: Read Packet
+    CF1->>CF1: Create Egresser
+    CF1->>CF1: Establish Stream
+    CF1->>CF1: Find Route (via CF2)
+    CF1->>CF1: Create Tether
+    CF1->>CF2: Encrypted Data
+    CF2->>CF2: Create Ingresser
+    CF2->>CF2: Decrypt & Forward
+    CF2->>CF2: Create Egresser
+    CF2->>CF2: Establish Stream
+    CF2->>CF2: Find Route (to CF3)
+    CF2->>CF2: Create Tether
+    CF2->>CF3: Encrypted Data
+    CF3->>CF3: Create Ingresser
+    CF3->>CF3: Decrypt
+    CF3->>TUN2: Write Packet
+    TUN2->>App: Deliver Packet
+```
+
+### Advantages Over Traditional Overlay VPNs
+
+Unlike mesh-based overlay VPNs (such as Tailscale, Netbird, ZeroTier, and Nebula), VeilNet:
+
+- **Eliminates Mesh Complexity**: No persistent peerings or exponential connection complexity. Routes are ephemeral and dissolve when idle.
+
+- **Independent of Host Routing**: VeilNet's routing is independent of host routing tables, enabling seamless operation across containers, VMs, bare metal, and multi-cloud infrastructure without subrouters or manual route advertisements.
+
+- **No Configuration Synchronization**: Nodes derive routing and encryption state dynamically at runtime through the decentralized control channel, eliminating the need for persistent configuration files or static peer lists.
+
+- **Post-Quantum Security**: Uses Kyber KEM, Dilithium signatures, and AES-GCM-256 for packet-level authentication suitable for multi-hop forwarding.
+
+This architecture enables VeilNet to operate seamlessly across physical machines, VMs, containers, Kubernetes clusters, and serverless workloads, adapting automatically to dynamic IPs, scaling clusters, and short-lived infrastructure.
+
+## Access Control
+
+VeilNet uses identity-based access control through **Teams**, which is fundamentally different from traditional network policies based on subnets or IP addresses. For detailed information, see the [official access control documentation](https://veilnet.net/docs/access-control/).
+
+### What is a Team?
+
+A **Team** in VeilNet is an identity that can be associated with Planes, Users, and VeilNet Conflux instances. It's similar to "Taint" for a node in a Kubernetes cluster, which defines affinities.
+
+Each Team has its own cryptographic hash signature that is used by VeilNet Conflux, along with Dilithium Digital Signature for authentication in a decentralized manner. This means VeilNet Conflux maintains access control even if the VeilNet Guardian server is offline.
+
+### How Access Control Works
+
+VeilNet's identity-based access control is possible because VeilNet Conflux is capable of **packet-level user authentication**, which is impossible for other overlay networks based on IP networks and WireGuard.
+
+1. **Team Association**: After a VeilNet Conflux instance authenticates with the VeilNet Guardian server and joins VeilNet, it pulls down its associated Teams (identities) granted by the owner.
+
+2. **Packet Authentication**: 
+   - When a packet is sent, a cryptographic hash is created from each identity based on the VeilNet Conflux instance's Dilithium public key
+   - When a packet is received, the VeilNet Conflux calculates the cryptographic hash of its own identities based on the sender's Dilithium public key
+   - Access is granted only if at least one hash matches (affinity exists)
+
+3. **Security**: The identities are never shared on the network, are globally verifiable, and are unique to each VeilNet Conflux instance. Impersonation is impossible because:
+   - **Impersonating Dilithium Public Key is impossible**: The pair of Dilithium public key and instance signature is immutable and announced when an instance joins the network
+   - **Impersonating Identity Hashes is impossible**: Without the private key (stored only in memory), a malicious instance cannot produce valid packet Dilithium DSA signatures
+
+### Associating Teams with Conflux
+
+There are two ways to associate Team identities with a Conflux instance:
+
+1. **Via CLI during registration**: Use the `--teams` flag (or `VEILNET_CONFLUX_TEAMS` environment variable) followed by a comma-separated list of teams:
+   ```bash
+   ./veilnet-conflux register -t "your-registration-token" --teams "team1,team2"
+   ```
+   The Conflux instance will acquire those identities if the user is a member or owner of the team. Otherwise, the team will be ignored.
+
+2. **Via UI**: Head to the Conflux management page on the [Auth Portal](https://auth.veilnet.app). Expand the Conflux card under any Plane. If the Conflux instance is operating in Portal Mode, click on team chips to add or remove team identities. Changes take effect immediately without requiring a reboot.
+
+### How Access Control by Team Works
+
+VeilNet access control is based on **affinity**. For two Conflux instances to communicate, they must share at least one common Team identity.
+
+**Example**: 
+- By default, following the Zero-Trust principle, Conflux instances only have the user identity
+- If James wants to access Ben's local network, Ben's Conflux instance will silently drop all messages because they don't share any common identities
+- To allow access, Ben must create a Team, invite James as a member, and associate the Team with both Conflux instances
+- Now James and Ben can access each other's networks
+
+A VeilNet Conflux instance can be associated with multiple teams to enable complex access control scenarios:
+- A staging server associated with both "Dev" and "Stage" teams
+- A development server associated with only the "Dev" team
+- A production server associated with only the "Prod" team
+
+The key principle: implement access control **based on your business logic, rather than IP address or subnet**.
+
+## Installation
+
+Download the latest release from [GitHub Releases](https://github.com/veil-net/conflux/releases) for your platform.
+
+### Linux
+
+1. Download the binary for your architecture
+2. Make it executable:
+   ```bash
+   chmod +x veilnet-conflux
+   ```
+3. Move it to a system path (optional):
+   ```bash
+   sudo mv veilnet-conflux /usr/local/bin/
+   ```
+
+### Windows
+
+1. Download the Windows binary from releases
+2. Extract and place the executable in your desired location
+
+### macOS
+
+1. Download the macOS binary from releases
+2. Make it executable:
+   ```bash
+   chmod +x veilnet-conflux
+   ```
+
+## System Service Installation (Primary Method)
+
+The primary method for installing and managing VeilNet Conflux is using the `register` and `unregister` commands. These commands handle registration with VeilNet and automatic service installation.
+
+### Registering a Conflux
+
+The `register` command registers your conflux with VeilNet, saves the configuration, and automatically installs and starts the system service.
+
+#### Required Parameters
+
+- **Registration Token**: Obtained from [https://auth.veilnet.app](https://auth.veilnet.app)
+  - Environment variable: `VEILNET_REGISTRATION_TOKEN`
+  - Command flag: `-t` or `--token`
+
+#### Optional Parameters
+
+- **Guardian URL**: The Guardian authentication server URL (default: `https://guardian.veilnet.app`)
+  - Environment variable: `VEILNET_GUARDIAN`
+  - Command flag: `-g` or `--guardian`
+
+- **Tag**: A tag for identifying the conflux
+  - Environment variable: `VEILNET_CONFLUX_TAG`
+
+- **CIDR**: The CIDR block for the conflux network
+  - Environment variable: `VEILNET_CONFLUX_CIDR`
+
+- **Portal Mode**: Enable portal mode (default: `false`)
+  - Environment variable: `VEILNET_PORTAL` (set to `true` to enable)
+  - Command flag: `-p` or `--portal`
+
+- **Teams**: Comma-separated list of teams to forward (e.g., `team1,team2`)
+  - Environment variable: `VEILNET_CONFLUX_TEAMS`
+
+#### Examples
+
+**Using environment variables (Linux/macOS):**
 ```bash
-# Register with a registration token (no CIDR)
-sudo ./veilnet-conflux register \
-  -t your-registration-token
-
-# Register with CIDR, e.g. 10.128.255.254
-sudo ./veilnet-conflux register \
-  -t your-registration-token \
-  --cidr 10.128.255.254/16
-
-# With portal mode enabled
-sudo ./veilnet-conflux register \
-  -t your-registration-token \
-  -p
-
-# Or using environment variables
 export VEILNET_REGISTRATION_TOKEN="your-registration-token"
-export VEILNET_PORTAL="false"
-
-sudo ./veilnet-conflux register
+export VEILNET_CONFLUX_TAG="my-conflux"
+export VEILNET_GUARDIAN="https://guardian.veilnet.app"
+./veilnet-conflux register
 ```
 
-> **Note**: Registration tokens can be obtained from [https://auth.veilnet.app](https://auth.veilnet.app). This is the primary method to connect a machine. Without a CIDR given, conflux will obtain a random VeilNet IP within the plane subnet. With a CIDR given, the conflux will have that IP address if it is available.
+**Using command flags:**
+```bash
+./veilnet-conflux register -t "your-registration-token" --tag "my-conflux" -g "https://guardian.veilnet.app"
+```
 
-**For integration only**: You can use the `up` command with a conflux token (expires in 30 seconds). See [https://guardian.veilnet.app/docs#/](https://guardian.veilnet.app/docs#/) for API documentation.
+**Windows (PowerShell):**
+```powershell
+$env:VEILNET_REGISTRATION_TOKEN="your-registration-token"
+$env:VEILNET_CONFLUX_TAG="my-conflux"
+.\veilnet-conflux.exe register
+```
 
-#### Option B: Docker (Second Recommended)
+The `register` command will:
+1. Remove any existing service
+2. Register the conflux with VeilNet
+3. Save the registration data to the configuration directory
+4. Install and start the system service
 
-**Using Docker Compose:**
+### Unregistering a Conflux
 
-1. **Create docker-compose.yml**:
+To remove the service and unregister from VeilNet:
+
+```bash
+./veilnet-conflux unregister
+```
+
+This command will:
+1. Unregister the conflux from VeilNet
+2. Stop and remove the system service
+3. Remove the registration configuration file
+
+### Service Management
+
+Once registered, you can manage the service using standard system commands:
+
+**Linux (systemd):**
+```bash
+# Check status
+sudo systemctl status veilnet
+
+# Start service
+sudo systemctl start veilnet
+
+# Stop service
+sudo systemctl stop veilnet
+
+# Restart service
+sudo systemctl restart veilnet
+
+# View logs
+sudo journalctl -u veilnet -f
+```
+
+**Windows:**
+```powershell
+# Check status
+Get-Service "VeilNet Conflux"
+
+# Start service
+Start-Service "VeilNet Conflux"
+
+# Stop service
+Stop-Service "VeilNet Conflux"
+```
+
+**macOS:**
+```bash
+# Check status
+sudo launchctl list | grep org.veilnet.conflux
+
+# Start service
+sudo launchctl start org.veilnet.conflux
+
+# Stop service
+sudo launchctl stop org.veilnet.conflux
+```
+
+You can also use the conflux CLI commands:
+```bash
+./veilnet-conflux start    # Start the service
+./veilnet-conflux stop     # Stop the service
+./veilnet-conflux status   # Check service status
+./veilnet-conflux remove   # Remove the service (without unregistering)
+```
+
+## Alternative Method for Integration (Secondary)
+
+The `up` and `down` commands are designed for integration into other applications or programs. They use a conflux token directly (rather than a registration token) and are suitable for programmatic use.
+
+### Using the `up` Command
+
+The `up` command starts the service with a conflux token directly, without registering with VeilNet.
+
+#### Required Parameters
+
+- **Conflux Token**: The conflux token (not a registration token)
+  - Environment variable: `VEILNET_CONFLUX_TOKEN`
+  - Command flag: `-t` or `--token`
+
+#### Optional Parameters
+
+- **Guardian URL**: The Guardian authentication server URL (default: `https://guardian.veilnet.app`)
+  - Environment variable: `VEILNET_GUARDIAN`
+  - Command flag: `-g` or `--guardian`
+
+- **Portal Mode**: Enable portal mode (default: `false`)
+  - Environment variable: `VEILNET_PORTAL` (set to `true` to enable)
+  - Command flag: `-p` or `--portal`
+
+#### Example
+
+```bash
+export VEILNET_CONFLUX_TOKEN="your-conflux-token"
+./veilnet-conflux up
+```
+
+Or using command flags:
+```bash
+./veilnet-conflux up -t "your-conflux-token" -g "https://guardian.veilnet.app"
+```
+
+The `up` command will:
+1. Remove any existing service
+2. Save the configuration to `up.json` (separate from registration data)
+3. Install and start the system service
+
+### Using the `down` Command
+
+To stop and remove the service started with `up`:
+
+```bash
+./veilnet-conflux down
+```
+
+This command will:
+1. Stop and remove the system service
+2. Remove the `up.json` configuration file
+
+**Note**: The `up`/`down` method saves configuration to `up.json`, which is separate from the registration data used by `register`/`unregister`. Use this method when integrating conflux into other applications or when you already have a conflux token.
+
+## Docker Container Deployment
+
+VeilNet Conflux can be deployed as a Docker container using the pre-built image.
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+- A `.env` file with required environment variables
+
+### Environment Variables
+
+Create a `.env` file in the same directory as your `docker-compose.yml`:
+
+```env
+VEILNET_CONFLUX_TOKEN=your-conflux-token
+VEILNET_GUARDIAN=https://guardian.veilnet.app
+VEILNET_PORTAL=false
+```
+
+### Docker Compose
+
+Use the provided `docker-compose.yml`:
+
 ```yaml
 services:
   veilnet-conflux:
+    image: veilnet/conflux:beta
     container_name: veilnet-conflux
-    image: veilnet/conflux:nats-0.0.6
     pull_policy: always
     restart: unless-stopped
-    # use this for Rift mode so that the host will use VeilNet as internet access, only available on Linux.
-    # network_mode: host 
     privileged: true
+    network_mode: host
     env_file:
       - .env
 ```
 
-2. **Create .env file**:
-```bash
-VEILNET_REGISTRATION_TOKEN=your-registration-token-here
-VEILNET_PORTAL=false # or true
-```
+**Important Notes:**
+- The container requires `privileged: true` for network operations
+- The container uses `network_mode: host` for direct network access
+- The image is pulled from the registry: `veilnet/conflux:beta`
 
-> **Note**: Registration tokens can be obtained from [https://auth.veilnet.app](https://auth.veilnet.app). This is the primary method to connect a machine.
+### Running the Container
 
-3. **Run**:
-```bash
-docker compose up -d
-```
+1. Create your `.env` file with the required environment variables
+2. Start the container:
+   ```bash
+   docker-compose up -d
+   ```
 
-**Using Docker directly:**
+3. View logs:
+   ```bash
+   docker-compose logs -f
+   ```
+
+4. Stop the container:
+   ```bash
+   docker-compose down
+   ```
+
+### Using Docker Run
+
+Alternatively, you can run the container directly:
+
 ```bash
 docker run -d \
   --name veilnet-conflux \
   --privileged \
-  -e VEILNET_REGISTRATION_TOKEN=your-registration-token \
-  -e VEILNET_PORTAL=false \
-  veilnet/conflux:nats-0.0.6
+  --network host \
+  --restart unless-stopped \
+  -e VEILNET_CONFLUX_TOKEN="your-conflux-token" \
+  -e VEILNET_GUARDIAN="https://guardian.veilnet.app" \
+  veilnet/conflux:beta
 ```
 
-> **Note**: The Docker command uses registration tokens as the primary method. Registration tokens can be obtained from [https://auth.veilnet.app](https://auth.veilnet.app).
+## Configuration Storage
 
-### 3. Verify Your Connection
+- **Linux**: `/root/.config/conflux/`
+  - Registration data: `/root/.config/conflux/conflux.json`
+  - Up data: `/root/.config/conflux/up.json`
 
-1. **Check network interface**: The conflux creates a `veilnet` TUN interface
-2. **Monitor logs**: Check the application logs for connection status
-3. **Test connectivity**: Verify your traffic is being routed through VeilNet
+- **Windows**: `C:\Windows\System32\config\systemprofile\AppData\Roaming\conflux\`
+  - Registration data: `conflux.json`
+  - Up data: `up.json`
 
-## Configuration
+- **macOS**: `/var/root/Library/Application Support/conflux/`
+  - Registration data: `conflux.json`
+  - Up data: `up.json`
 
-### Command Line Options
+Environment variables take precedence over saved configuration files.
 
-The VeilNet Conflux supports multiple commands:
+## Support
 
-#### `up` Command - Start the Conflux (Integration Only)
+For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/veil-net/conflux).
 
-> **⚠️ Important**: This command is for integration only. Conflux tokens expire in 30 seconds and should only be used for programmatic integration. For regular usage, use the `register` command instead. For integration API documentation, see [https://guardian.veilnet.app/docs#/](https://guardian.veilnet.app/docs#/).
-
-| Option | Flag | Description | Required | Default |
-|--------|------|-------------|----------|---------|
-| Token | `-t, --token` | Your conflux authentication token (expires in 30 seconds) | Yes | - |
-| Portal | `-p, --portal` | Enable portal mode | No | `false` |
-| Guardian | `-g, --guardian` | The Guardian URL (Authentication Server) | No | `https://guardian.veilnet.app` |
-
-#### `register` Command - Register and Start a Conflux
-
-> **Note**: This is the primary method to connect a machine. Registration tokens can be obtained from [https://auth.veilnet.app](https://auth.veilnet.app).
-
-| Option | Flag | Description | Required | Default |
-|--------|------|-------------|----------|---------|
-| Token | `-t, --token` | Registration token (Bearer) | Yes | - |
-| Portal | `-p, --portal` | Enable portal mode | No | `false` |
-| Guardian | `-g, --guardian` | The Guardian URL (Authentication Server) | No | `https://guardian.veilnet.app` |
-| CIDR | `--cidr` | The CIDR to be used by the conflux | No | - |
-| Tag | `--tag` | Optional tag for the conflux | No | - |
-| Subnets | `--subnets` | The subnets to be forwarded by the conflux, separated by comma (e.g. 10.128.0.0/16,10.129.0.0/16) | No | - |
-| Teams | `--teams` | The teams to be associated with the conflux, separated by comma, e.g. team1,team2 | No | - |
-
-#### `down` Command - Stop the Conflux
-
-Stops the currently running conflux service.
-
-#### Service Management Commands
-
-| Command | Description |
-|---------|-------------|
-| `install` | Install the conflux as a system service (not supported on macOS) |
-| `start` | Start the installed conflux service |
-| `stop` | Stop the conflux service |
-| `remove` | Remove the conflux service from the system |
-| `status` | Check the status of the conflux service |
-
-#### `docker` Command - Run the Conflux Service in Docker
-
-| Option | Flag | Description | Required | Default |
-|--------|------|-------------|----------|---------|
-| Token | `-t, --token` | Registration token (Bearer) | Yes | - |
-| Portal | `-p, --portal` | Enable portal mode | No | `false` |
-| Guardian | `-g, --guardian` | The Guardian URL (Authentication Server) | No | `https://guardian.veilnet.app` |
-| Tag | `--tag` | The tag for the conflux | No | - |
-| CIDR | `--cidr` | The CIDR of the conflux | No | - |
-| Subnets | `--subnets` | The subnets to be forwarded by the conflux, separated by comma (e.g. 10.128.0.0/16,10.129.0.0/16) | No | - |
-| Teams | `--teams` | The teams to be associated with the conflux, separated by comma, e.g. team1,team2 | No | - |
-
-#### `unregister` Command - Unregister the Conflux
-
-Unregisters the conflux and stops the service. This command takes no parameters.
-
-> **Note**: This is the primary method to unregister and disconnect a machine.
-
- 
-
-### Environment Variables
-
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `VEILNET_CONFLUX_TOKEN` | Conflux authentication token (for `up`) | Yes (for `up`) | - |
-| `VEILNET_REGISTRATION_TOKEN` | Registration token (for `register`) | Yes (for `register`) | - |
-| `VEILNET_PORTAL` | Enable portal mode (`true` or `false`) | No | `false` |
-| `VEILNET_GUARDIAN` | The Guardian URL (Authentication Server) | No | `https://guardian.veilnet.app` |
-| `VEILNET_CONFLUX_TAG` | Optional tag for the conflux | No | - |
-| `VEILNET_CONFLUX_CIDR` | The CIDR to be used by the conflux (for `register`) | No | - |
-| `VEILNET_CONFLUX_SUBNETS` | The subnets to be forwarded by the conflux, separated by comma (for `register` and `docker`) | No | - |
-| `VEILNET_CONFLUX_TEAMS` | The teams to be associated with the conflux, separated by comma (for `register` and `docker`) | No | - |
-
-### Configuration Priority
-
-Configuration values are loaded in this order (later overrides earlier):
-
-1. **Default values** (hardcoded defaults)
-2. **Environment variables** (with `VEILNET_` prefix)
-3. **Command line flags** (highest priority)
-
-## Usage Examples
-
-### Basic Connection and Disconnection (Primary Method)
-```bash
-# Register and start the conflux (primary method)
-# Registration tokens can be obtained from https://auth.veilnet.app
-sudo ./veilnet-conflux register \
-  -t your-registration-token
-
-# Unregister and stop the conflux
-sudo ./veilnet-conflux unregister
-```
-
-### Integration Method (Conflux Token - 30s expiration)
-```bash
-# Start the conflux with a conflux token (for integration only)
-# ⚠️ Warning: Conflux tokens expire in 30 seconds
-# For integration API documentation, see https://guardian.veilnet.app/docs#/
-sudo ./veilnet-conflux up \
-  -t eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-# Stop the conflux
-sudo ./veilnet-conflux down
-```
-
-### Portal Mode
-```bash
-# Primary method: Register with portal mode enabled
-sudo ./veilnet-conflux register \
-  -t your-registration-token \
-  -p
-
-# Integration method (conflux token expires in 30s)
-sudo ./veilnet-conflux up \
-  -t your-conflux-token \
-  -p
-```
-
-### Register and Start a Conflux (Primary Method)
-```bash
-# Registration tokens can be obtained from https://auth.veilnet.app
-./veilnet-conflux register \
-  -t your-registration-token \
-  -p
-
-# With CIDR and subnets
-./veilnet-conflux register \
-  -t your-registration-token \
-  --cidr 10.128.255.254/16 \
-  --subnets 10.128.0.0/16,10.129.0.0/16
-```
-
-### Using Environment Variables
-```bash
-# Primary method: Using registration token
-export VEILNET_REGISTRATION_TOKEN="your-registration-token"
-export VEILNET_PORTAL="false"
-
-sudo ./veilnet-conflux register
-
-# Integration method: Using conflux token (expires in 30s)
-export VEILNET_CONFLUX_TOKEN="your-conflux-token"
-export VEILNET_PORTAL="false"
-
-sudo ./veilnet-conflux up
-```
-
-### Service Management
-```bash
-# Install as a system service (recommended for Linux/Windows)
-# Note: Not supported on macOS
-sudo ./veilnet-conflux install
-
-# Start the service
-sudo ./veilnet-conflux start
-
-# Check service status
-sudo ./veilnet-conflux status
-
-# Stop the service
-sudo ./veilnet-conflux stop
-
-# Remove the service
-sudo ./veilnet-conflux remove
-```
-
-### Register and Unregister Commands (Primary Method)
-```bash
-# Register a new conflux (primary method)
-# Registration tokens can be obtained from https://auth.veilnet.app
-./veilnet-conflux register \
-  -t your-registration-token \
-  -p
-
-# Unregister the conflux (takes no parameters)
-./veilnet-conflux unregister
-```
-
-### Integration with Conflux Token (30s expiration)
-```bash
-# For programmatic integration only
-# ⚠️ Warning: Conflux tokens expire in 30 seconds
-# API documentation: https://guardian.veilnet.app/docs#/
-./veilnet-conflux up \
-  -t your-conflux-token \
-  -p
-```
-
-### Docker with Custom Configuration
-```bash
-# Using registration token (primary method)
-docker run -d \
-  --name veilnet-conflux \
-  --privileged \
-  -e VEILNET_REGISTRATION_TOKEN="your-registration-token" \
-  -e VEILNET_PORTAL="false" \
-  veilnet/conflux:nats-0.0.6
-```
-
-## Network Configuration
-
-The VeilNet Conflux automatically configures your network:
-
-1. **Creates TUN Interface**: Establishes a virtual network interface named `veilnet`
-2. **Configures Routes**: Sets up routing to direct traffic through the VeilNet network
-3. **Bypass Routes**: Adds routes for Cloudflare STUN/TURN servers to maintain connectivity
-4. **Cleanup**: Properly removes all network changes on shutdown
-
-### Network Interface Details
-
-- **Interface Name**: `veilnet`
-- **Type**: TUN (Layer 3)
-- **MTU**: 1500
-- **IP Assignment**: Dynamic from Guardian service
-
-### Portal Mode vs Rift Mode
-
-- **Rift Mode** (default): Routes all traffic through the VeilNet network
-- **Portal Mode** (`-p` flag): Acts as a gateway, forwarding traffic from veilnet to other devices or networks
-
-### K3s Deployment with VeilNet
-
-When deploying a K3s cluster using VeilNet as the internal interface, you need to first set up VeilNet using the CLI, then configure K3s to use the VeilNet interface for cluster networking. This ensures that all cluster communication happens over the VeilNet network.
-
-**Prerequisites:**
-1. VeilNet Conflux must be running using the CLI `register` command
-2. Obtain the VeilNet IP address assigned to the `veilnet` interface
-
-**Step 1: Set up VeilNet using CLI**
-
-First, register and start VeilNet on each node:
-```bash
-# Register with a registration token
-sudo ./veilnet-conflux register \
-  -t your-registration-token
-```
-
-**Step 2: Get the VeilNet IP:**
-```bash
-# On Linux
-ip addr show veilnet
-
-# On macOS
-ifconfig veilnet
-
-# Extract the IP address (e.g., 10.128.1.2)
-```
-
-**Step 3: Install K3s with VeilNet Configuration**
-
-**For Master Node:**
-
-```bash
-curl -sfL https://get.k3s.io | \
-INSTALL_K3S_EXEC="
-  --node-ip <master_veilnet_ip> \
-  --advertise-address <master_veilnet_ip> \
-  --node-external-ip <master_veilnet_ip> \
-  --bind-address <master_veilnet_ip> \
-  --tls-san <master_veilnet_ip> \
-  --flannel-iface veilnet \
-  --node-name veilnet-demo-master
-" sh -
-```
-
-**For Agent Node:**
-
-```bash
-curl -sfL https://get.k3s.io | \
-K3S_URL="https://<master_veilnet_ip>:6443" \
-K3S_TOKEN="<paste-token>" \
-INSTALL_K3S_EXEC="
-  --node-ip <agent_veilnet_ip>
-  --flannel-iface veilnet
-  --node-name <agent-name>
-" sh -
-```
-
-**Verify Configuration:**
-```bash
-# Check K3s is using VeilNet IP
-sudo k3s kubectl get nodes -o wide
-```
-
-> **Note**: Ensure all nodes in the K3s cluster have VeilNet connectivity and can reach each other via their VeilNet IPs. VeilNet must be running on each node before installing K3s.
-
-## Monitoring and Maintenance
-
-### Logs
-
-The conflux uses structured logging. Check logs for detailed information:
-
-```bash
-# Docker logs
-docker logs veilnet-conflux -f
-
-# System logs (if running as service)
-sudo journalctl -u veilnet-conflux -f
-
-# Direct logs
-sudo ./veilnet-conflux up 2>&1 | tee veilnet.log
-```
-
-### Graceful Shutdown
-
-The conflux handles shutdown signals (SIGINT, SIGTERM) gracefully:
-
-1. **Stops Anchor**: Disconnects from Guardian service
-2. **Cleans Routes**: Removes all VeilNet-related network routes
-3. **Removes Interface**: Deletes the TUN interface
-4. **Restores Default Route**: Restores original network configuration
-
-### Updates
-
-To update your conflux:
-
-```bash
-# Docker
-docker-compose pull
-docker-compose up -d
-
-# Native
-# Download new binary and restart
-```
-
-## Troubleshooting
-
-### Common Issues
-
-**Permission Denied**
-```bash
-# Ensure running with sudo for native installation
-sudo ./veilnet-conflux up
-
-# For Docker, ensure --privileged flag is set
-```
-
-**TUN Device Creation Failed**
-```bash
-# Check if TUN module is loaded (Linux)
-lsmod | grep tun
-
-# Load TUN module if needed (Linux)
-sudo modprobe tun
-
-# For Docker, ensure --privileged flag is set
-```
-
-**Network Configuration Failed**
-```bash
-# Check if iproute2 is installed (Linux)
-which ip
-
-# Install if missing
-sudo apt install iproute2  # Ubuntu/Debian
-sudo yum install iproute   # CentOS/RHEL
-```
-
-**Connection to Guardian Failed**
-```bash
-# Check network connectivity
-curl https://guardian.veilnet.app
-
-# Verify token is correct
-# Check logs for authentication errors
-```
-
-**Route Conflicts**
-```bash
-# Check existing routes
-ip route show
-
-# Remove conflicting routes manually if needed
-sudo ip route del default dev veilnet
-```
-
-**Registration/Unregistration Issues**
-```bash
-# Verify your email and password are correct
-# Check that the conflux name is unique
-# Ensure you have proper permissions for the plane
-```
-
-### macOS (Darwin) Specific Issues
-
-> **⚠️ Note**: macOS support is experimental and may have additional issues.
-
-**TUN/TAP Interface Issues**
-```bash
-# macOS may require additional permissions
-# Check System Preferences > Security & Privacy > Privacy > Full Disk Access
-# Ensure Terminal or your terminal app has full disk access
-```
-
-**Network Configuration on macOS**
-```bash
-# macOS uses different network configuration tools
-# The conflux may not work as expected on macOS
-# Consider using Docker for better compatibility
-```
-
-### Windows Specific Issues
-
-> **⚠️ Note**: Portal mode is not supported on Windows.
-
-**TUN Device Issues**
-```bash
-# Windows requires the wintun.dll driver
-# The conflux automatically extracts and uses the embedded driver
-```
-
-## License
-
-This project is licensed under the CC-BY-NC-ND-4.0 License.
