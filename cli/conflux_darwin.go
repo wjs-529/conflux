@@ -52,88 +52,160 @@ func newConflux() *conflux {
 }
 
 func (c *conflux) Run() error {
-	// Load existing registration data
-	register := Register{}
-	register.loadRegistrationData()
+	// Check if conflux token is provided
+	token := os.Getenv("VEILNET_CONFLUX_TOKEN")
+	guardian := os.Getenv("VEILNET_GUARDIAN")
+	portal := os.Getenv("VEILNET_PORTAL") == "true"
+	if token != "" && guardian != "" {
 
-	if register.Guardian == "" {
-		veilnet.Logger.Sugar().Errorf("Guardian URL is missing in the registration data")
-		return fmt.Errorf("guardian URL is missing in the registration data")
-	}
-	if register.Token == "" {
-		veilnet.Logger.Sugar().Errorf("Token is missing in the registration data")
-		return fmt.Errorf("token is missing in the registration data")
-	}
-	if register.Portal {
-		veilnet.Logger.Sugar().Errorf("Portal mode is not supported on macOS")
-		return fmt.Errorf("portal mode is not supported on macOS")
-	}
-
-	// Register the conflux
-	confluxToken, err := register.register()
-	if err != nil {
-		veilnet.Logger.Sugar().Errorf("Failed to register conflux: %v", err)
-		return err
-	}
-
-	// Save the registration data
-	err = register.saveRegistrationData(confluxToken)
-	if err != nil {
-		veilnet.Logger.Sugar().Errorf("Failed to save registration data: %v", err)
-		return err
-	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
-	// Start the anchor
-	c.anchor = veilnet.NewAnchor()
-	err = c.anchor.Start(register.Guardian, confluxToken.Token, false)
-	if err != nil {
-		veilnet.Logger.Sugar().Errorf("Failed to start VeilNet: %v", err)
-		return err
-	}
-
-	// Link the anchor to the TUN device
-	err = c.anchor.LinkWithTUN("veilnet", 1500)
-	if err != nil {
-		veilnet.Logger.Sugar().Errorf("Failed to link anchor to TUN device: %v", err)
-		return err
-	}
-
-	// Start the metrics server
-	c.metricsServer = &http.Server{
-		Addr:    ":9090",
-		Handler: c.anchor.Metrics.GetHandler(),
-	}
-	go func() {
-		if err := c.metricsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			veilnet.Logger.Sugar().Errorf("Metrics server error: %v", err)
+		if portal {
+			veilnet.Logger.Sugar().Errorf("Portal mode is not supported on macOS")
+			return fmt.Errorf("portal mode is not supported on macOS")
 		}
-	}()
 
-	select {
-	case <-ctx.Done():
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		if c.metricsServer != nil {
-			if err := c.metricsServer.Shutdown(ctx); err != nil {
-				veilnet.Logger.Sugar().Errorf("Failed to stop metrics server: %v", err)
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+
+		// Start the anchor
+		c.anchor = veilnet.NewAnchor()
+		err := c.anchor.Start(guardian, token, false)
+		if err != nil {
+			veilnet.Logger.Sugar().Errorf("failed to start VeilNet: %v", err)
+			return err
+		}
+
+		// Link the anchor to the TUN device
+		err = c.anchor.LinkWithTUN("veilnet", 1500)
+		if err != nil {
+			veilnet.Logger.Sugar().Errorf("failed to link anchor to TUN device: %v", err)
+			return err
+		}
+
+		// Start the metrics server
+		c.metricsServer = &http.Server{
+			Addr:    ":9090",
+			Handler: c.anchor.Metrics.GetHandler(),
+		}
+		go func() {
+			if err := c.metricsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				veilnet.Logger.Sugar().Errorf("metrics server error: %v", err)
 			}
-		}
-		if c.anchor != nil {
-			c.anchor.Stop()
-		}
-		return nil
-	case <-c.anchor.Ctx.Done():
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		if c.metricsServer != nil {
-			if err := c.metricsServer.Shutdown(ctx); err != nil {
-				veilnet.Logger.Sugar().Errorf("Failed to stop metrics server: %v", err)
+		}()
+
+		select {
+		case <-ctx.Done():
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if c.metricsServer != nil {
+				if err := c.metricsServer.Shutdown(ctx); err != nil {
+					veilnet.Logger.Sugar().Errorf("failed to stop metrics server: %v", err)
+				}
 			}
+			if c.anchor != nil {
+				c.anchor.Stop()
+			}
+			return nil
+		case <-c.anchor.Ctx.Done():
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if c.metricsServer != nil {
+				if err := c.metricsServer.Shutdown(ctx); err != nil {
+					veilnet.Logger.Sugar().Errorf("failed to stop metrics server: %v", err)
+				}
+			}
+			if c.anchor != nil {
+				c.anchor.Stop()
+			}
+			return nil
 		}
-		return nil
+	} else {
+
+		// If conflux token is not provided, load existing registration data
+		register := Register{}
+		register.loadRegistrationData()
+
+		if register.Guardian == "" {
+			veilnet.Logger.Sugar().Errorf("Guardian URL is missing in the registration data")
+			return fmt.Errorf("guardian URL is missing in the registration data")
+		}
+		if register.Token == "" {
+			veilnet.Logger.Sugar().Errorf("Token is missing in the registration data")
+			return fmt.Errorf("token is missing in the registration data")
+		}
+		if register.Portal {
+			veilnet.Logger.Sugar().Errorf("Portal mode is not supported on macOS")
+			return fmt.Errorf("portal mode is not supported on macOS")
+		}
+
+		// Register the conflux
+		confluxToken, err := register.register()
+		if err != nil {
+			veilnet.Logger.Sugar().Errorf("failed to register conflux: %v", err)
+			return err
+		}
+
+		// Save the registration data
+		err = register.saveRegistrationData(confluxToken)
+		if err != nil {
+			veilnet.Logger.Sugar().Errorf("failed to save registration data: %v", err)
+			return err
+		}
+
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+
+		// Start the anchor
+		c.anchor = veilnet.NewAnchor()
+		err = c.anchor.Start(register.Guardian, confluxToken.Token, false)
+		if err != nil {
+			veilnet.Logger.Sugar().Errorf("failed to start VeilNet: %v", err)
+			return err
+		}
+
+		// Link the anchor to the TUN device
+		err = c.anchor.LinkWithTUN("veilnet", 1500)
+		if err != nil {
+			veilnet.Logger.Sugar().Errorf("failed to link anchor to TUN device: %v", err)
+			return err
+		}
+
+		// Start the metrics server
+		c.metricsServer = &http.Server{
+			Addr:    ":9090",
+			Handler: c.anchor.Metrics.GetHandler(),
+		}
+		go func() {
+			if err := c.metricsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				veilnet.Logger.Sugar().Errorf("metrics server error: %v", err)
+			}
+		}()
+
+		select {
+		case <-ctx.Done():
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if c.metricsServer != nil {
+				if err := c.metricsServer.Shutdown(ctx); err != nil {
+					veilnet.Logger.Sugar().Errorf("failed to stop metrics server: %v", err)
+				}
+			}
+			if c.anchor != nil {
+				c.anchor.Stop()
+			}
+			return nil
+		case <-c.anchor.Ctx.Done():
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if c.metricsServer != nil {
+				if err := c.metricsServer.Shutdown(ctx); err != nil {
+					veilnet.Logger.Sugar().Errorf("failed to stop metrics server: %v", err)
+				}
+			}
+			if c.anchor != nil {
+				c.anchor.Stop()
+			}
+			return nil
+		}
 	}
 }
 

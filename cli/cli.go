@@ -16,6 +16,8 @@ type CLI struct {
 	Remove  Remove           `cmd:"remove" help:"Remove the conflux service, this will not update registration data"`
 	Status  Status           `cmd:"status" help:"Get the status of the conflux service"`
 
+	Up      Up               `cmd:"up" help:"Start the veilnet service with a conflux token"`
+	Down    Down             `cmd:"down" help:"Stop the veilnet service and remove the conflux token"`
 	Register   Register   `cmd:"register" help:"Register a new conflux with a registration token, and reinstall the service"`
 	Unregister Unregister `cmd:"unregister" help:"Unregister the conflux and remove the service"`
 }
