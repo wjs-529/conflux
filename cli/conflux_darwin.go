@@ -75,7 +75,7 @@ func (c *conflux) Run() error {
 		}
 
 		// Link the anchor to the TUN device
-		err = c.anchor.LinkWithTUN("veilnet", 1500)
+		err = c.anchor.LinkWithTUN("utun", 1500)
 		if err != nil {
 			veilnet.Logger.Sugar().Errorf("failed to link anchor to TUN device: %v", err)
 			return err
@@ -164,7 +164,7 @@ func (c *conflux) Run() error {
 		}
 
 		// Link the anchor to the TUN device
-		err = c.anchor.LinkWithTUN("veilnet", 1500)
+		err = c.anchor.LinkWithTUN("utun", 1500)
 		if err != nil {
 			veilnet.Logger.Sugar().Errorf("failed to link anchor to TUN device: %v", err)
 			return err
