@@ -289,7 +289,7 @@ VeilNet uses identity-based access control through **Teams**, which is fundament
 
 ### What is a Team?
 
-A **Team** in VeilNet is an identity that can be associated with Planes, Users, and VeilNet Conflux instances. It's similar to "Taint" for a node in a Kubernetes cluster, which defines affinities.
+A **Team** in VeilNet is an identity that can be associated with Realms, Users, and VeilNet Conflux instances. It's similar to "Taint" for a node in a Kubernetes cluster, which defines affinities.
 
 Each Team has its own cryptographic hash signature that is used by VeilNet Conflux, along with Dilithium Digital Signature for authentication in a decentralized manner. This means VeilNet Conflux maintains access control even if the VeilNet Guardian server is offline.
 
@@ -318,7 +318,7 @@ There are two ways to associate Team identities with a Conflux instance:
    ```
    The Conflux instance will acquire those identities if the user is a member or owner of the team. Otherwise, the team will be ignored.
 
-2. **Via UI**: Head to the Conflux management page on the [Auth Portal](https://auth.veilnet.app). Expand the Conflux card under any Plane. If the Conflux instance is operating in Portal Mode, click on team chips to add or remove team identities. Changes take effect immediately without requiring a reboot.
+2. **Via UI**: Head to the Conflux management page on the [Auth Portal](https://console.veilnet.app). Expand the Conflux card under any Realm. If the Conflux instance is operating in Portal Mode, click on team chips to add or remove team identities. Changes take effect immediately without requiring a reboot.
 
 ### How Access Control by Team Works
 
@@ -378,7 +378,7 @@ The `register` command registers your conflux with VeilNet, saves the configurat
 
 #### Required Parameters
 
-- **Registration Token**: Obtained from [https://auth.veilnet.app](https://auth.veilnet.app)
+- **Registration Token**: Obtained from [https://console.veilnet.app](https://console.veilnet.app)
   - Environment variable: `VEILNET_REGISTRATION_TOKEN`
   - Command flag: `-t` or `--token`
 
