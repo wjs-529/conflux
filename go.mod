@@ -2,14 +2,25 @@ module github.com/veil-net/conflux
 
 go 1.25.4
 
-require github.com/veil-net/veilnet v0.0.0
+require (
+	github.com/gofiber/fiber/v2 v2.52.10
+	github.com/veil-net/veilnet v0.0.0
+)
 
 require (
+	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/klauspost/compress v1.18.2 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/miekg/dns v1.1.69 // indirect
 	github.com/nats-io/nats.go v1.47.0 // indirect
 	github.com/nats-io/nkeys v0.4.12 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.51.0 // indirect
+	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/mod v0.31.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect

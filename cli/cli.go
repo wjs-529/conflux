@@ -1,10 +1,12 @@
 package cli
 
 import (
-	"fmt"
-
 	"github.com/alecthomas/kong"
+	"github.com/veil-net/conflux/service"
+	"github.com/veil-net/veilnet/logger"
 )
+
+var Logger = logger.Logger
 
 type CLI struct {
 	Version kong.VersionFlag `short:"v" help:"Print the version and exit"`
@@ -15,8 +17,8 @@ type CLI struct {
 	Remove  Remove           `cmd:"remove" help:"Remove the conflux service, this will not update registration data"`
 	Status  Status           `cmd:"status" help:"Get the status of the conflux service"`
 
-	Up      Up               `cmd:"up" help:"Start the veilnet service with a conflux token"`
-	Down    Down             `cmd:"down" help:"Stop the veilnet service and remove the conflux token"`
+	Up         Up         `cmd:"up" help:"Start the veilnet service with a conflux token"`
+	Down       Down       `cmd:"down" help:"Stop the veilnet service and remove the conflux token"`
 	Register   Register   `cmd:"register" help:"Register a new conflux with a registration token, and reinstall the service"`
 	Unregister Unregister `cmd:"unregister" help:"Unregister the conflux and remove the service"`
 }
@@ -24,76 +26,43 @@ type CLI struct {
 type Run struct{}
 
 func (cmd *Run) Run() error {
-	conflux := NewConflux()
-	err := conflux.Run()
-	if err != nil {
-		return err
-	}
+	Logger.Sugar().Info("Starting VeilNet Conflux...")
+	conflux := service.NewService()
+	conflux.Run()
 	return nil
 }
 
 type Install struct{}
 
 func (cmd *Install) Run() error {
-	conflux := NewConflux()
-	err := conflux.Install()
-	if err != nil {
-		Logger.Sugar().Errorf("Failed to install the conflux service: %v", err)
-		return err
-	}
-	return nil
+	conflux := service.NewService()
+	return conflux.Install()
 }
 
 type Start struct{}
 
 func (cmd *Start) Run() error {
-	conflux := NewConflux()
-	err := conflux.Start()
-	if err != nil {
-		Logger.Sugar().Errorf("Failed to start the conflux service: %v", err)
-		return err
-	}
-	return nil
+	conflux := service.NewService()
+	return conflux.Start()
 }
 
 type Stop struct{}
 
 func (cmd *Stop) Run() error {
-	conflux := NewConflux()
-	err := conflux.Stop()
-	if err != nil {
-		Logger.Sugar().Errorf("Failed to stop the conflux service: %v", err)
-		return err
-	}
-	return nil
+	conflux := service.NewService()
+	return conflux.Stop()
 }
 
 type Remove struct{}
 
 func (cmd *Remove) Run() error {
-	conflux := NewConflux()
-	err := conflux.Remove()
-	if err != nil {
-		Logger.Sugar().Errorf("Failed to remove the conflux service: %v", err)
-		return err
-	}
-	return nil
+	conflux := service.NewService()
+	return conflux.Remove()
 }
 
 type Status struct{}
 
 func (cmd *Status) Run() error {
-	conflux := NewConflux()
-	status, err := conflux.Status()
-	if err != nil {
-		Logger.Sugar().Errorf("Failed to get the status of the conflux service: %v", err)
-		return err
-	}
-	if status {
-		Logger.Sugar().Infof("VeilNet service is running.")
-		return nil
-	} else {
-		Logger.Sugar().Errorf("VeilNet service is not running.")
-		return fmt.Errorf("VeilNet service is not running")
-	}
+	conflux := service.NewService()
+	return conflux.Status()
 }

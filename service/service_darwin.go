@@ -1,0 +1,169 @@
+//go:build darwin
+// +build darwin
+
+package service
+
+import (
+	"bytes"
+	"context"
+	"os"
+	"os/exec"
+	"os/signal"
+	"path/filepath"
+	"syscall"
+	"text/template"
+
+	"github.com/veil-net/conflux/api"
+	"github.com/veil-net/veilnet"
+)
+
+const LaunchDaemonPlistTemplate = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>org.veilnet.conflux</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>{{.ExecPath}}</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>StandardOutPath</key>
+	<string>/var/log/veilnet-conflux.log</string>
+	<key>StandardErrorPath</key>
+	<string>/var/log/veilnet-conflux.error.log</string>
+</dict>
+</plist>
+`
+
+type service struct {
+	api *api.API
+}
+
+func newService() *service {
+	api := api.NewAPI()
+	return &service{
+		api: api,
+	}
+}
+
+func (s *service) Run() error {
+	// Create the context
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	// Run the API
+	s.api.Run()
+
+	// Wait for the context to be done
+	<-ctx.Done()
+
+	// Stop the API
+	s.api.Stop()
+
+	return nil
+}
+
+func (s *service) Install() error {
+	// Get current executable path
+	exePath, err := os.Executable()
+	if err != nil {
+		Logger.Sugar().Errorf("failed to get executable path: %v", err)
+		return err
+	}
+
+	// Resolve symlinks to get real path
+	realPath, err := filepath.EvalSymlinks(exePath)
+	if err != nil {
+		realPath = exePath
+	}
+
+	// Parse and execute template
+	tmpl, err := template.New("launchdaemon").Parse(LaunchDaemonPlistTemplate)
+	if err != nil {
+		Logger.Sugar().Errorf("failed to parse launchdaemon template: %v", err)
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, struct{ ExecPath string }{ExecPath: realPath}); err != nil {
+		Logger.Sugar().Errorf("failed to execute launchdaemon template: %v", err)
+		return err
+	}
+
+	// Write plist file
+	plistFile := "/Library/LaunchDaemons/org.veilnet.conflux.plist"
+	if err := os.WriteFile(plistFile, buf.Bytes(), 0644); err != nil {
+		Logger.Sugar().Errorf("failed to write launchdaemon plist file: %v", err)
+		return err
+	}
+
+	// Start the service
+	cmd := exec.Command("launchctl", "bootstrap", "system", plistFile)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		Logger.Sugar().Errorf("failed to bootstrap launchctl service: %v: %s", err, string(out))
+		return err
+	}
+
+	veilnet.Logger.Sugar().Infof("VeilNet Conflux service installed and started")
+	return nil
+}
+
+func (s *service) Start() error {
+	plistFile := "/Library/LaunchDaemons/org.veilnet.conflux.plist"
+	cmd := exec.Command("launchctl", "bootstrap", "system", plistFile)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		Logger.Sugar().Errorf("failed to start launchctl service: %v: %s", err, string(out))
+		return err
+	}
+	veilnet.Logger.Sugar().Infof("VeilNet Conflux service started")
+	return nil
+}
+
+func (s *service) Stop() error {
+	plistFile := "/Library/LaunchDaemons/org.veilnet.conflux.plist"
+	cmd := exec.Command("launchctl", "bootout", "system", plistFile)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		Logger.Sugar().Errorf("failed to stop launchctl service: %v: %s", err, string(out))
+		return err
+	}
+	veilnet.Logger.Sugar().Infof("VeilNet Conflux service stopped")
+	return nil
+}
+
+func (s *service) Remove() error {
+	plistFile := "/Library/LaunchDaemons/org.veilnet.conflux.plist"
+	cmd := exec.Command("launchctl", "bootout", "system", plistFile)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		veilnet.Logger.Sugar().Warnf("Failed to stop launchctl service: %v: %s", err, string(out))
+	} else {
+		veilnet.Logger.Sugar().Infof("VeilNet Conflux service stopped")
+	}
+
+	err = os.Remove(plistFile)
+	if err != nil {
+		Logger.Sugar().Errorf("failed to remove launchdaemon plist file: %v", err)
+		return err
+	}
+	Logger.Sugar().Infof("VeilNet Conflux service removed")
+	return nil
+}
+
+func (s *service) Status() error {
+	// Check if the service is running
+	cmd := exec.Command("launchctl", "list", "org.veilnet.conflux")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		Logger.Sugar().Errorf("VeilNet Conflux service status: %s", string(out))
+		return err
+	}
+	Logger.Sugar().Infof("VeilNet Conflux service status: %s", string(out))
+	return nil
+}
