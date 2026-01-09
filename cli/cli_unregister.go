@@ -23,12 +23,12 @@ func (cmd *Unregister) Run() error {
 			Logger.Sugar().Errorf("Failed to install VeilNet Conflux service: %v", err)
 			return err
 		} else {
+			Logger.Sugar().Warnf("Waiting for VeilNet Conflux service to be ready...")
 			for {
 				resp, err := http.Get("http://127.0.0.1:1993/health")
 				if err == nil && resp.StatusCode == http.StatusOK {
 					break
 				}
-				Logger.Sugar().Warnf("Waiting for VeilNet Conflux service to be ready...")
 			}
 		}
 	}
@@ -60,6 +60,6 @@ func (cmd *Unregister) Run() error {
 	}
 
 	Logger.Sugar().Infof("VeilNet Conflux unregistered successfully")
-	
+
 	return nil
 }
