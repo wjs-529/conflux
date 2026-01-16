@@ -17,7 +17,7 @@ You can now build your own VPN app using our pre-compiled AAR library for Androi
 
 You will still need a VeilNet account, but you can inject the registration token into your app as an API key, so your app users do not need to have a VeilNet account.
 
-Code examples have been added, and you are welcome to ask for help at: https://discord.gg/yKCZCZutDR
+Code examples have been added to example/android, and you are welcome to ask for help at: https://discord.gg/yKCZCZutDR
 
 ### Guardian Server API
 
