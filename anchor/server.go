@@ -13,7 +13,7 @@ type CreateTUNArgs struct {
 	MTU    int
 }
 
-type LinkWithFileDescriptorArgs struct {
+type AttachWithFileDescriptorArgs struct {
 	FileDescriptor int
 }
 
@@ -81,8 +81,8 @@ func (s *AnchorRPCServer) DestroyTUN(args interface{}, resp *string) error {
 	return nil
 }
 
-func (s *AnchorRPCServer) LinkWithTUN(args interface{}, resp *string) error {
-	err := s.Impl.LinkWithTUN()
+func (s *AnchorRPCServer) AttachWithTUN(args interface{}, resp *string) error {
+	err := s.Impl.AttachWithTUN()
 	if err != nil {
 		*resp = err.Error()
 	} else {
@@ -91,8 +91,8 @@ func (s *AnchorRPCServer) LinkWithTUN(args interface{}, resp *string) error {
 	return nil
 }
 
-func (s *AnchorRPCServer) LinkWithFileDescriptor(args *LinkWithFileDescriptorArgs, resp *string) error {
-	err := s.Impl.LinkWithFileDescriptor(args.FileDescriptor)
+func (s *AnchorRPCServer) AttachWithFileDescriptor(args *AttachWithFileDescriptorArgs, resp *string) error {
+	err := s.Impl.AttachWithFileDescriptor(args.FileDescriptor)
 	if err != nil {
 		*resp = err.Error()
 	} else {

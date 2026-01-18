@@ -33,15 +33,15 @@ type Anchor interface {
 	// DestroyTUN destroys the TUN interface.
 	DestroyTUN() error
 
-	// LinkWithTUN links the anchor with a TUN interface.
+	// AttachWithTUN links the anchor with a TUN interface.
 	// Parameters:
 	//   - tun: The TUN interface to link with
-	LinkWithTUN() error
+	AttachWithTUN() error
 
-	// LinkWithFileDescriptor links the anchor with a file descriptor.
+	// AttachWithFileDescriptor links the anchor with a file descriptor.
 	// Parameters:
 	//   - fileDescriptor: The file descriptor to link with
-	LinkWithFileDescriptor(fileDescriptor int) error
+	AttachWithFileDescriptor(fileDescriptor int) error
 
 	// GetID returns the ID of the anchor.
 	GetID() (string, error)

@@ -2,7 +2,9 @@ package anchor
 
 import (
 	"net/rpc"
+	"os"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
 )
 
@@ -17,3 +19,21 @@ func (p *AnchorPlugin) Server(*plugin.MuxBroker) (interface{}, error) {
 func (AnchorPlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
 	return &AnchorRPC{client: c}, nil
 }
+
+var handshakeConfig = plugin.HandshakeConfig{
+	ProtocolVersion:  1,
+	MagicCookieKey:   "ANCHOR",
+	MagicCookieValue: "anchor",
+}
+
+var pluginMap = map[string]plugin.Plugin{
+	"anchor": &AnchorPlugin{},
+}
+
+var HCLogger = hclog.New(&hclog.LoggerOptions{
+	Name:       "conflux",
+	Level:      hclog.Info,
+	Output:     os.Stderr,
+	JSONFormat: false,
+	Color:      hclog.ForceColor,
+})

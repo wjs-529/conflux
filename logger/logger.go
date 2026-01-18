@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/veil-net/conflux/anchor"
 	"github.com/hashicorp/go-hclog"
 )
 
@@ -45,23 +46,7 @@ func (l *CustomLogger) Sugar() *Sugar {
 // Global logger instance
 var Logger *CustomLogger
 
-// HCLogger is the underlying hclog logger instance
-var HCLogger hclog.Logger
-
 // init initializes the hclogger and sets up the global logger
 func init() {
-	HCLogger = hclog.New(&hclog.LoggerOptions{
-		Name:       "conflux",
-		Level:      hclog.Debug,
-		Output:     os.Stderr,
-		JSONFormat: false,
-		Color:      hclog.ForceColor,
-	})
-	Logger = &CustomLogger{Logger: HCLogger}
-}
-
-// SetLogger allows setting a custom hclog logger (useful for plugin integration)
-func SetLogger(hclogger hclog.Logger) {
-	HCLogger = hclogger
-	Logger = &CustomLogger{Logger: hclogger}
+	Logger = &CustomLogger{Logger: anchor.HCLogger}
 }

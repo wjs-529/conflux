@@ -1,6 +1,3 @@
-// Copyright IBM Corp. 2016, 2025
-// SPDX-License-Identifier: MPL-2.0
-
 package anchor
 
 import (
@@ -93,9 +90,9 @@ func (g *AnchorRPC) DestroyTUN() error {
 	return nil
 }
 
-func (g *AnchorRPC) LinkWithTUN() error {
+func (g *AnchorRPC) AttachWithTUN() error {
 	var resp string
-	err := g.client.Call("Plugin.LinkWithTUN", new(interface{}), &resp)
+	err := g.client.Call("Plugin.AttachWithTUN", new(interface{}), &resp)
 	if err != nil {
 		return err
 	}
@@ -105,9 +102,9 @@ func (g *AnchorRPC) LinkWithTUN() error {
 	return nil
 }
 
-func (g *AnchorRPC) LinkWithFileDescriptor(fileDescriptor int) error {
+func (g *AnchorRPC) AttachWithFileDescriptor(fileDescriptor int) error {
 	var resp string
-	err := g.client.Call("Plugin.LinkWithFileDescriptor", &LinkWithFileDescriptorArgs{FileDescriptor: fileDescriptor}, &resp)
+	err := g.client.Call("Plugin.AttachWithFileDescriptor", &AttachWithFileDescriptorArgs{FileDescriptor: fileDescriptor}, &resp)
 	if err != nil {
 		return err
 	}
