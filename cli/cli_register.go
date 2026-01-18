@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/veil-net/conflux/api"
 	"github.com/veil-net/conflux/service"
 )
 
@@ -28,61 +29,39 @@ type ConfluxToken struct {
 
 func (cmd *Register) Run() error {
 
-	// Check if the service is running
+	// Parse the command
+	config := &Config{
+		RegistrationToken: cmd.RegistrationToken,
+		Guardian:          cmd.Guardian,
+		Veil:              cmd.Veil,
+		VeilPort:          cmd.VeilPort,
+		Portal:            cmd.Portal,
+		Teams:             cmd.Teams,
+		Tag:               cmd.Tag,
+		Cidr:              cmd.Cidr,
+	}
+
+	// Register the conflux
+	registrationResponse, err := RegisterConflux(config)
+	if err != nil {
+		Logger.Sugar().Errorf("failed to register conflux: %v", err)
+		return err
+	}
+
+	// Save the configuration
+	err = SaveConfig(config)
+	if err != nil {
+		Logger.Sugar().Errorf("failed to save configuration: %v", err)
+		return err
+	}
+
+	// Install the service
 	conflux := service.NewService()
-	err := conflux.Status()
+	err = conflux.Install()
 	if err != nil {
-		Logger.Sugar().Warnf("VeilNet Conflux service is not installed, installing...")
-		err = conflux.Install()
-		if err != nil {
-			Logger.Sugar().Errorf("Failed to install VeilNet Conflux service: %v", err)
-			return err
-		} else {
-			Logger.Sugar().Warnf("Waiting for VeilNet Conflux service to be ready...")
-			for {
-				resp, err := http.Get("http://127.0.0.1:1993/health")
-				if err == nil && resp.StatusCode == http.StatusOK {
-					break
-				}
-			}
-		}
-	}
-
-	// Create the request to API
-	body, err := json.Marshal(cmd)
-	if err != nil {
-		Logger.Sugar().Errorf("Failed to marshal register command: %v", err)
+		Logger.Sugar().Errorf("failed to install service: %v", err)
 		return err
 	}
-
-	// Create the request
-	req, err := http.NewRequest("POST", "http://127.0.0.1:1993/register", bytes.NewBuffer(body))
-	if err != nil {
-		Logger.Sugar().Errorf("Failed to create request to API: %v", err)
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	// Make the request
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		Logger.Sugar().Errorf("Failed to make request to API: %v", err)
-		return err
-	}
-	defer resp.Body.Close()
-
-	// if the response is not 200, return an error
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			Logger.Sugar().Errorf("Failed to read response body: %v", err)
-			return err
-		}
-		Logger.Sugar().Errorf("Failed to register conflux: %s: %s", resp.Status, string(body))
-		return fmt.Errorf("failed to register conflux: %s: %s", resp.Status, string(body))
-	}
-
-	Logger.Sugar().Infof("VeilNet Conflux registered successfully")
 
 	return nil
 }

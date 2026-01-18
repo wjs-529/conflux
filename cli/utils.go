@@ -1,4 +1,4 @@
-package api
+package cli
 
 import (
 	"bytes"
@@ -9,11 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-
-	"github.com/veil-net/conflux/logger"
 )
-
-var Logger = logger.Logger
 
 type Config struct {
 	RegistrationToken string `json:"registration_token" validate:"required"`
@@ -39,7 +35,7 @@ type RegistrationResponse struct {
 	Token     string `json:"token" validate:"required"`
 }
 
-func getConfigDir() (string, error) {
+func GetConfigDir() (string, error) {
 	var configDir string
 
 	switch runtime.GOOS {
@@ -58,8 +54,8 @@ func getConfigDir() (string, error) {
 	return configDir, nil
 }
 
-func loadConfig() (*Config, error) {
-	configDir, err := getConfigDir()
+func LoadConfig() (*Config, error) {
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +72,8 @@ func loadConfig() (*Config, error) {
 	return config, nil
 }
 
-func saveConfig(config *Config) error {
-	configDir, err := getConfigDir()
+func SaveConfig(config *Config) error {
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return err
 	}
@@ -93,8 +89,8 @@ func saveConfig(config *Config) error {
 	return nil
 }
 
-func deleteConfig() error {
-	configDir, err := getConfigDir()
+func DeleteConfig() error {
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return err
 	}
@@ -102,7 +98,7 @@ func deleteConfig() error {
 	return os.Remove(configFilePath)
 }
 
-func registerConflux(config *Config) (*RegistrationResponse, error) {
+func RegisterConflux(config *Config) (*RegistrationResponse, error) {
 	// Marshal the request body
 	body, err := json.Marshal(config)
 	if err != nil {
@@ -151,7 +147,7 @@ func registerConflux(config *Config) (*RegistrationResponse, error) {
 	return &state, nil
 }
 
-func unregisterConflux(config *Config, confluxID string) error {
+func UnregisterConflux(config *Config, confluxID string) error {
 	// Create the request
 	url := fmt.Sprintf("%s/conflux/unregister?conflux_id=%s", config.Guardian, confluxID)
 	req, err := http.NewRequest("DELETE", url, nil)

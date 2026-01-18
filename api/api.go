@@ -12,7 +12,6 @@ import (
 
 type API struct {
 	config          *Config
-	app             *fiber.App
 	plugin          *hcplugin.Client
 	anchorInterface anchor.Anchor
 
@@ -21,13 +20,11 @@ type API struct {
 }
 
 func NewAPI() *API {
-	app := fiber.New()
-	return &API{
-		app: app,
-	}
+	return &API{}
 }
 
 func (a *API) initializeAnchor() error {
+	// Stop the plugin if it is running
 	if a.plugin != nil {
 		a.plugin.Kill()
 		a.anchorInterface = nil
@@ -60,11 +57,11 @@ func (a *API) Run() {
 	}
 
 	// Load existing configuration
-	existingConfig, err := loadConfig()
+	existingConfig, err := LoadConfig()
 	if err == nil {
 		Logger.Sugar().Infof("loaded existing configuration: Conflux Tag: %s, Portal: %t", existingConfig.Tag, existingConfig.Portal)
 		// Register the conflux
-		registrationResponse, err := registerConflux(existingConfig)
+		registrationResponse, err := RegisterConflux(existingConfig)
 		if err == nil {
 			// Create the anchor
 			err = a.anchorInterface.CreateAnchor()
@@ -80,6 +77,10 @@ func (a *API) Run() {
 					err = a.anchorInterface.AttachWithTUN()
 					if err == nil {
 						a.config = existingConfig
+						err = SaveConfig(a.config)
+						if err != nil {
+							Logger.Sugar().Errorf("failed to save configuration: %v", err)
+						}
 					} else {
 						a.resetAnchor()
 						Logger.Sugar().Warnf("failed to link anchor with TUN device: %v", err)
@@ -98,35 +99,16 @@ func (a *API) Run() {
 	} else {
 		Logger.Sugar().Warnf("failed to load configuration: %v", err)
 	}
-
-	// Register the API routes
-	a.app.Post("/register", a.handleRegister)
-	a.app.Delete("/unregister", a.handleUnregister)
-	a.app.Post("/up", a.handleUP)
-	a.app.Delete("/down", a.handleDown)
-	a.app.Get("/health", a.handleHealth)
-
-	// Start the fiber app
-	go func() {
-		if err := a.app.Listen("127.0.0.1:1993"); err != nil {
-			Logger.Sugar().Fatalf("VeilNet Conflux service has stopped: %v", err)
-		}
-	}()
-
-	Logger.Sugar().Infof("VeilNet Conflux service has started on port 1993")
 }
 
 func (a *API) Stop() {
 	a.once.Do(func() {
 		a.mu.Lock()
 		defer a.mu.Unlock()
-		if a.anchorInterface != nil {
-			a.anchorInterface.StopAnchor()
-			a.anchorInterface.DestroyAnchor()
-			a.anchorInterface.DestroyTUN()
-		}
-		if a.app != nil {
-			a.app.Shutdown()
+		if a.plugin != nil {
+			a.plugin.Kill()
+			a.anchorInterface = nil
+			a.plugin = nil
 		}
 	})
 }
@@ -145,7 +127,7 @@ func (a *API) handleRegister(c *fiber.Ctx) error {
 		})
 	}
 	// Register the conflux
-	registrationResponse, err := registerConflux(config)
+	registrationResponse, err := RegisterConflux(config)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"detail": fmt.Sprintf("failed to register conflux: %v", err),
@@ -192,7 +174,7 @@ func (a *API) handleRegister(c *fiber.Ctx) error {
 	}
 	a.config = config
 	// Save the configuration
-	err = saveConfig(config)
+	err = SaveConfig(config)
 	if err != nil {
 		Logger.Sugar().Warnf("failed to save configuration: %v", err)
 	}
@@ -210,7 +192,7 @@ func (a *API) handleUnregister(c *fiber.Ctx) error {
 	}
 
 	// Delete the configuration file
-	err := deleteConfig()
+	err := DeleteConfig()
 	if err != nil {
 		Logger.Sugar().Warnf("failed to delete configuration file: %v", err)
 	}
@@ -225,7 +207,7 @@ func (a *API) handleUnregister(c *fiber.Ctx) error {
 			})
 		}
 		// Unregister the conflux
-		err = unregisterConflux(a.config, confluxID)
+		err = UnregisterConflux(a.config, confluxID)
 		if err != nil {
 			Logger.Sugar().Errorf("failed to unregister conflux: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
