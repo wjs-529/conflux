@@ -121,7 +121,7 @@ func (a *API) Run() {
 		}
 	}()
 
-	Logger.Sugar().Info("VeilNet Conflux service has started on port 1993")
+	Logger.Sugar().Infof("VeilNet Conflux service has started on port 1993")
 }
 
 func (a *API) Stop() {

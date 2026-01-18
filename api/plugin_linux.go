@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/veil-net/conflux/anchor"
+	"github.com/veil-net/conflux/logger"
 )
 
 //go:embed veilnet
@@ -28,6 +29,7 @@ func (a *API) anchor() error {
 		HandshakeConfig: handshakeConfig,
 		Plugins:         pluginMap,
 		Cmd:             exec.Command(pluginPath),
+		Logger:          logger.HCLogger,
 	})
 
 	// Connect via RPC

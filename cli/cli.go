@@ -26,7 +26,7 @@ type CLI struct {
 type Run struct{}
 
 func (cmd *Run) Run() error {
-	Logger.Sugar().Info("Starting VeilNet Conflux...")
+	Logger.Sugar().Infof("Starting VeilNet Conflux...")
 	conflux := service.NewService()
 	conflux.Run()
 	return nil
