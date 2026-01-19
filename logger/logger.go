@@ -2,10 +2,9 @@ package logger
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/veil-net/conflux/anchor"
 	"github.com/hashicorp/go-hclog"
+	"github.com/veil-net/conflux/anchor"
 )
 
 // CustomLogger wraps hclog.CustomLogger to provide a zap-like interface
@@ -32,11 +31,6 @@ func (s *Sugar) Warnf(format string, args ...interface{}) {
 
 func (s *Sugar) Debugf(format string, args ...interface{}) {
 	s.logger.Debug(fmt.Sprintf(format, args...))
-}
-
-func (s *Sugar) Fatalf(format string, args ...interface{}) {
-	s.logger.Error(fmt.Sprintf(format, args...))
-	os.Exit(1)
 }
 
 func (l *CustomLogger) Sugar() *Sugar {
