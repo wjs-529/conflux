@@ -1,46 +1,29 @@
 package logger
 
 import (
-	"fmt"
-
-	"github.com/hashicorp/go-hclog"
-	"github.com/veil-net/conflux/anchor"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-// CustomLogger wraps hclog.CustomLogger to provide a zap-like interface
-type CustomLogger struct {
-	hclog.Logger
-}
+// Logger is the global zap logger.
+// Use Logger.Sugar() to get a SugaredLogger which supports Infof, Errorf, etc.
+var Logger *zap.Logger
 
-// Sugar provides a zap-like sugar interface
-type Sugar struct {
-	logger hclog.Logger
-}
-
-func (s *Sugar) Infof(format string, args ...interface{}) {
-	s.logger.Info(fmt.Sprintf(format, args...))
-}
-
-func (s *Sugar) Errorf(format string, args ...interface{}) {
-	s.logger.Error(fmt.Sprintf(format, args...))
-}
-
-func (s *Sugar) Warnf(format string, args ...interface{}) {
-	s.logger.Warn(fmt.Sprintf(format, args...))
-}
-
-func (s *Sugar) Debugf(format string, args ...interface{}) {
-	s.logger.Debug(fmt.Sprintf(format, args...))
-}
-
-func (l *CustomLogger) Sugar() *Sugar {
-	return &Sugar{logger: l.Logger}
-}
-
-// Global logger instance
-var Logger *CustomLogger
-
-// init initializes the hclogger and sets up the global logger
 func init() {
-	Logger = &CustomLogger{Logger: anchor.HCLogger}
+	// Configure Zap for development with colors
+	config := zap.NewDevelopmentConfig()
+
+	// Enable automatic color for levels (INFO, ERROR, etc.)
+	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	// Use a human-readable ISO8601 time format
+	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	// Disable caller information (file:line)
+	config.DisableCaller = true
+
+	var err error
+	Logger, err = config.Build()
+	if err != nil {
+		// Fallback if zap fails to initialize
+		panic(err)
+	}
 }
