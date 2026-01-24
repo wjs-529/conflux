@@ -11,7 +11,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-
 type ServiceImpl struct {
 }
 
@@ -45,15 +44,26 @@ func (s *ServiceImpl) Run() {
 
 	// Start the anchor
 	_, err = anchor.StartAnchor(context.Background(), &pb.StartAnchorRequest{
-		GuardianUrl:  config.Guardian,
-		VeilUrl:       config.Veil,
-		VeilPort:      int32(config.VeilPort),
-		AnchorToken:   config.Token,
-		Portal:        config.Portal,
+		GuardianUrl: config.Guardian,
+		VeilUrl:     config.Veil,
+		VeilPort:    int32(config.VeilPort),
+		AnchorToken: config.Token,
+		Portal:      !config.Rift,
 	})
 	if err != nil {
 		Logger.Sugar().Errorf("failed to start anchor: %v", err)
 		return
+	}
+
+	// Add taints
+	for _, taint := range config.Taints {
+		_, err = anchor.AddTaint(context.Background(), &pb.AddTaintRequest{
+			Signature: []byte(taint),
+		})
+		if err != nil {
+			Logger.Sugar().Errorf("failed to add taint: %v", err)
+			return
+		}
 	}
 
 	// Create the TUN device
