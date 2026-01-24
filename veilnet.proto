@@ -44,9 +44,7 @@ enum CmdType {
     SHUTDOWN = 0;
     QUERY_LOCAL_NETWORK=1;
     QUERY_REMOTE_NETWORK=2;
-    IDENTITY_INSERT = 3;
-    IDENTITY_DELETE = 4;
-    IDENTITY_UPDATE = 5;
+    SCOPE_UPDATE = 3;
 }
 
 enum Role {
@@ -61,18 +59,9 @@ message Header {
     uint32 length = 4;
     bytes mldsa_public_key = 5;
     bytes mldsa_signature = 6;
-    repeated bytes identities = 7;
-    int64 timestamp = 8;
-}
-
-enum IdentityType {
-    USER = 0;
-    TEAM = 1;
-}
-
-message Policy{
-    string cidr = 1;
-    string action = 2;
+    repeated bytes scopes = 7;
+    repeated bytes taints = 8;
+    int64 timestamp = 9;
 }
 
 message RTC_Offer{
@@ -210,9 +199,12 @@ message QueryRemoteNetwork {
     
 }
 
-message IdentityUpdate {
-    IdentityType type = 1;
-    string id = 2;
+message Scope{
+    bytes signature = 1;
+}
+
+message ScopeUpdate {
+    repeated Scope scopes = 1;
 }
 
 // gRPC messages
@@ -238,8 +230,16 @@ message GetIDResponse {
     string id = 1;
 }
 
-message GetIPResponse {
-    string ip = 1;
+message GetCIDRResponse {
+    string cidr = 1;
+}
+
+message AddTaintRequest {
+    bytes signature = 1;
+}
+
+message RemoveTaintRequest {
+    bytes signature = 1;
 }
 
 service Anchor {
@@ -252,4 +252,7 @@ service Anchor {
     rpc AttachWithTUN(google.protobuf.Empty) returns (google.protobuf.Empty);
     rpc AttachWithFileDescriptor(AttachWithFileDescriptorRequest) returns (google.protobuf.Empty);
     rpc GetID(google.protobuf.Empty) returns (GetIDResponse);
+    rpc GetCIDR(google.protobuf.Empty) returns (GetCIDRResponse);
+    rpc AddTaint(AddTaintRequest) returns (google.protobuf.Empty);
+    rpc RemoveTaint(RemoveTaintRequest) returns (google.protobuf.Empty);
 }

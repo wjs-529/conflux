@@ -272,6 +272,10 @@ func (s *service) Execute(args []string, changeRequests <-chan svc.ChangeRequest
 		case svc.Interrogate:
 			changes <- changeRequest.CurrentStatus
 		case svc.Stop, svc.Shutdown:
+			changes <- svc.Status{State: svc.StopPending}
+			anchor.StopAnchor(context.Background(), &emptypb.Empty{})
+			anchor.DestroyAnchor(context.Background(), &emptypb.Empty{})
+			anchor.DestroyTUN(context.Background(), &emptypb.Empty{})
 			changes <- svc.Status{State: svc.Stopped}
 			return false, 0
 		default:

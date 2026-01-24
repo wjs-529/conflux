@@ -29,6 +29,9 @@ const (
 	Anchor_AttachWithTUN_FullMethodName            = "/veilnet.Anchor/AttachWithTUN"
 	Anchor_AttachWithFileDescriptor_FullMethodName = "/veilnet.Anchor/AttachWithFileDescriptor"
 	Anchor_GetID_FullMethodName                    = "/veilnet.Anchor/GetID"
+	Anchor_GetCIDR_FullMethodName                  = "/veilnet.Anchor/GetCIDR"
+	Anchor_AddTaint_FullMethodName                 = "/veilnet.Anchor/AddTaint"
+	Anchor_RemoveTaint_FullMethodName              = "/veilnet.Anchor/RemoveTaint"
 )
 
 // AnchorClient is the client API for Anchor service.
@@ -44,6 +47,9 @@ type AnchorClient interface {
 	AttachWithTUN(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	AttachWithFileDescriptor(ctx context.Context, in *AttachWithFileDescriptorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetID(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetIDResponse, error)
+	GetCIDR(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetCIDRResponse, error)
+	AddTaint(ctx context.Context, in *AddTaintRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RemoveTaint(ctx context.Context, in *RemoveTaintRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type anchorClient struct {
@@ -144,6 +150,36 @@ func (c *anchorClient) GetID(ctx context.Context, in *emptypb.Empty, opts ...grp
 	return out, nil
 }
 
+func (c *anchorClient) GetCIDR(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetCIDRResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCIDRResponse)
+	err := c.cc.Invoke(ctx, Anchor_GetCIDR_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *anchorClient) AddTaint(ctx context.Context, in *AddTaintRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Anchor_AddTaint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *anchorClient) RemoveTaint(ctx context.Context, in *RemoveTaintRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Anchor_RemoveTaint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AnchorServer is the server API for Anchor service.
 // All implementations must embed UnimplementedAnchorServer
 // for forward compatibility.
@@ -157,6 +193,9 @@ type AnchorServer interface {
 	AttachWithTUN(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	AttachWithFileDescriptor(context.Context, *AttachWithFileDescriptorRequest) (*emptypb.Empty, error)
 	GetID(context.Context, *emptypb.Empty) (*GetIDResponse, error)
+	GetCIDR(context.Context, *emptypb.Empty) (*GetCIDRResponse, error)
+	AddTaint(context.Context, *AddTaintRequest) (*emptypb.Empty, error)
+	RemoveTaint(context.Context, *RemoveTaintRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAnchorServer()
 }
 
@@ -193,6 +232,15 @@ func (UnimplementedAnchorServer) AttachWithFileDescriptor(context.Context, *Atta
 }
 func (UnimplementedAnchorServer) GetID(context.Context, *emptypb.Empty) (*GetIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetID not implemented")
+}
+func (UnimplementedAnchorServer) GetCIDR(context.Context, *emptypb.Empty) (*GetCIDRResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCIDR not implemented")
+}
+func (UnimplementedAnchorServer) AddTaint(context.Context, *AddTaintRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddTaint not implemented")
+}
+func (UnimplementedAnchorServer) RemoveTaint(context.Context, *RemoveTaintRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveTaint not implemented")
 }
 func (UnimplementedAnchorServer) mustEmbedUnimplementedAnchorServer() {}
 func (UnimplementedAnchorServer) testEmbeddedByValue()                {}
@@ -377,6 +425,60 @@ func _Anchor_GetID_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Anchor_GetCIDR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AnchorServer).GetCIDR(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Anchor_GetCIDR_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AnchorServer).GetCIDR(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Anchor_AddTaint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddTaintRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AnchorServer).AddTaint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Anchor_AddTaint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AnchorServer).AddTaint(ctx, req.(*AddTaintRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Anchor_RemoveTaint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveTaintRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AnchorServer).RemoveTaint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Anchor_RemoveTaint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AnchorServer).RemoveTaint(ctx, req.(*RemoveTaintRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Anchor_ServiceDesc is the grpc.ServiceDesc for Anchor service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -419,6 +521,18 @@ var Anchor_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetID",
 			Handler:    _Anchor_GetID_Handler,
+		},
+		{
+			MethodName: "GetCIDR",
+			Handler:    _Anchor_GetCIDR_Handler,
+		},
+		{
+			MethodName: "AddTaint",
+			Handler:    _Anchor_AddTaint_Handler,
+		},
+		{
+			MethodName: "RemoveTaint",
+			Handler:    _Anchor_RemoveTaint_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
