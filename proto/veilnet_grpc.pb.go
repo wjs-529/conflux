@@ -20,8 +20,6 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Anchor_CreateAnchor_FullMethodName             = "/veilnet.Anchor/CreateAnchor"
-	Anchor_DestroyAnchor_FullMethodName            = "/veilnet.Anchor/DestroyAnchor"
 	Anchor_StartAnchor_FullMethodName              = "/veilnet.Anchor/StartAnchor"
 	Anchor_StopAnchor_FullMethodName               = "/veilnet.Anchor/StopAnchor"
 	Anchor_CreateTUN_FullMethodName                = "/veilnet.Anchor/CreateTUN"
@@ -38,8 +36,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AnchorClient interface {
-	CreateAnchor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DestroyAnchor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	StartAnchor(ctx context.Context, in *StartAnchorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	StopAnchor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateTUN(ctx context.Context, in *CreateTUNRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -58,26 +54,6 @@ type anchorClient struct {
 
 func NewAnchorClient(cc grpc.ClientConnInterface) AnchorClient {
 	return &anchorClient{cc}
-}
-
-func (c *anchorClient) CreateAnchor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Anchor_CreateAnchor_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *anchorClient) DestroyAnchor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Anchor_DestroyAnchor_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *anchorClient) StartAnchor(ctx context.Context, in *StartAnchorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
@@ -184,8 +160,6 @@ func (c *anchorClient) RemoveTaint(ctx context.Context, in *RemoveTaintRequest, 
 // All implementations must embed UnimplementedAnchorServer
 // for forward compatibility.
 type AnchorServer interface {
-	CreateAnchor(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
-	DestroyAnchor(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	StartAnchor(context.Context, *StartAnchorRequest) (*emptypb.Empty, error)
 	StopAnchor(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	CreateTUN(context.Context, *CreateTUNRequest) (*emptypb.Empty, error)
@@ -206,12 +180,6 @@ type AnchorServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAnchorServer struct{}
 
-func (UnimplementedAnchorServer) CreateAnchor(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateAnchor not implemented")
-}
-func (UnimplementedAnchorServer) DestroyAnchor(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DestroyAnchor not implemented")
-}
 func (UnimplementedAnchorServer) StartAnchor(context.Context, *StartAnchorRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartAnchor not implemented")
 }
@@ -261,42 +229,6 @@ func RegisterAnchorServer(s grpc.ServiceRegistrar, srv AnchorServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&Anchor_ServiceDesc, srv)
-}
-
-func _Anchor_CreateAnchor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AnchorServer).CreateAnchor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Anchor_CreateAnchor_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AnchorServer).CreateAnchor(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Anchor_DestroyAnchor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AnchorServer).DestroyAnchor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Anchor_DestroyAnchor_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AnchorServer).DestroyAnchor(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Anchor_StartAnchor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -486,14 +418,6 @@ var Anchor_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "veilnet.Anchor",
 	HandlerType: (*AnchorServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "CreateAnchor",
-			Handler:    _Anchor_CreateAnchor_Handler,
-		},
-		{
-			MethodName: "DestroyAnchor",
-			Handler:    _Anchor_DestroyAnchor_Handler,
-		},
 		{
 			MethodName: "StartAnchor",
 			Handler:    _Anchor_StartAnchor_Handler,

@@ -17,27 +17,26 @@ enum MessageType {
 
     DNS_QUERY = 6;
     DNS_ANSWER = 7;
-    DNS_OFFER = 8;
 
-    ARP_REQUEST = 9;
-    ARP_RESPONSE = 10;
-    ARP_UPDATE = 11;
+    ARP_REQUEST = 8;
+    ARP_RESPONSE = 9;
+    ARP_UPDATE = 10;
 
-    STREAM_DISCOVERY = 12;
-    STREAM_DISCOVERY_RESPONSE = 13;
-    STREAM_REQUEST = 14;
-    STREAM_RESPONSE = 15;
-    STREAM_UPDATE = 16;
+    STREAM_DISCOVERY = 11;
+    STREAM_DISCOVERY_RESPONSE = 12;
+    STREAM_REQUEST = 13;
+    STREAM_RESPONSE = 14;
+    STREAM_UPDATE = 15;
 
-    ECHO = 17;
+    ECHO = 16;
+    
+    DATA = 17;
 
-    DATA = 18;
+    ADD_REMOTE_NETWORK = 18;
+    REMOVE_REMOTE_NETWORK = 19;
 
-    ADD_REMOTE_NETWORK = 19;
-    REMOVE_REMOTE_NETWORK = 20;
-
-    CMD = 21;
-    CMD_RESPONSE = 22;
+    CMD = 20;
+    CMD_RESPONSE = 21;
 }
 
 enum CmdType {
@@ -243,8 +242,6 @@ message RemoveTaintRequest {
 }
 
 service Anchor {
-    rpc CreateAnchor(google.protobuf.Empty) returns (google.protobuf.Empty);
-    rpc DestroyAnchor(google.protobuf.Empty) returns (google.protobuf.Empty);
     rpc StartAnchor(StartAnchorRequest) returns (google.protobuf.Empty);
     rpc StopAnchor(google.protobuf.Empty) returns (google.protobuf.Empty);
     rpc CreateTUN(CreateTUNRequest) returns (google.protobuf.Empty);

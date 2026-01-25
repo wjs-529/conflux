@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/veil-net/conflux/anchor"
 	pb "github.com/veil-net/conflux/proto"
@@ -28,17 +29,20 @@ func (s *ServiceImpl) Run() {
 	}
 
 	// Initialize the anchor plugin
-	anchor, cmd, err := anchor.NewAnchor()
+	subprocess, err := anchor.NewAnchor()
 	if err != nil {
-		Logger.Sugar().Errorf("failed to initialize anchor plugin: %v", err)
+		Logger.Sugar().Errorf("failed to initialize anchor subprocess: %v", err)
 		return
 	}
-	defer cmd.Process.Kill()
+	defer subprocess.Process.Kill()
 
-	// Initialize the anchor instance
-	_, err = anchor.CreateAnchor(context.Background(), &emptypb.Empty{})
+	// Wait for the subprocess to start
+	time.Sleep(1 * time.Second)
+
+	// Create a gRPC client connection
+	anchor, err := anchor.NewAnchorClient()
 	if err != nil {
-		Logger.Sugar().Errorf("failed to create anchor instance: %v", err)
+		Logger.Sugar().Errorf("failed to create anchor client: %v", err)
 		return
 	}
 
@@ -92,9 +96,6 @@ func (s *ServiceImpl) Run() {
 
 	// Stop the anchor
 	_, err = anchor.StopAnchor(context.Background(), &emptypb.Empty{})
-
-	// Destroy the anchor
-	_, err = anchor.DestroyAnchor(context.Background(), &emptypb.Empty{})
 
 	// Destroy the TUN device
 	_, err = anchor.DestroyTUN(context.Background(), &emptypb.Empty{})

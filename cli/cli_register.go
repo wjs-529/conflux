@@ -57,7 +57,7 @@ func (cmd *Register) Run() error {
 			signature := sha256.Sum256([]byte(taint + registrationResponse.ConfluxID))
 			encodedSignature := hex.EncodeToString(signature[:])
 			taints = append(taints, encodedSignature)
-			Logger.Sugar().Infof("created taint: %s, use this signature %s with --joint-taints to form a cluster with other conflux", taint, encodedSignature, encodedSignature)
+			Logger.Sugar().Infof("created taint: %s, use this signature %s with --joint-taints to form a cluster with other conflux", taint, encodedSignature)
 		}
 	}
 	if len(cmd.JoinTaints) > 0 {

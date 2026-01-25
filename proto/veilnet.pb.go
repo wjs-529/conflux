@@ -33,21 +33,20 @@ const (
 	MessageType_ICE_ANSWER                MessageType = 5
 	MessageType_DNS_QUERY                 MessageType = 6
 	MessageType_DNS_ANSWER                MessageType = 7
-	MessageType_DNS_OFFER                 MessageType = 8
-	MessageType_ARP_REQUEST               MessageType = 9
-	MessageType_ARP_RESPONSE              MessageType = 10
-	MessageType_ARP_UPDATE                MessageType = 11
-	MessageType_STREAM_DISCOVERY          MessageType = 12
-	MessageType_STREAM_DISCOVERY_RESPONSE MessageType = 13
-	MessageType_STREAM_REQUEST            MessageType = 14
-	MessageType_STREAM_RESPONSE           MessageType = 15
-	MessageType_STREAM_UPDATE             MessageType = 16
-	MessageType_ECHO                      MessageType = 17
-	MessageType_DATA                      MessageType = 18
-	MessageType_ADD_REMOTE_NETWORK        MessageType = 19
-	MessageType_REMOVE_REMOTE_NETWORK     MessageType = 20
-	MessageType_CMD                       MessageType = 21
-	MessageType_CMD_RESPONSE              MessageType = 22
+	MessageType_ARP_REQUEST               MessageType = 8
+	MessageType_ARP_RESPONSE              MessageType = 9
+	MessageType_ARP_UPDATE                MessageType = 10
+	MessageType_STREAM_DISCOVERY          MessageType = 11
+	MessageType_STREAM_DISCOVERY_RESPONSE MessageType = 12
+	MessageType_STREAM_REQUEST            MessageType = 13
+	MessageType_STREAM_RESPONSE           MessageType = 14
+	MessageType_STREAM_UPDATE             MessageType = 15
+	MessageType_ECHO                      MessageType = 16
+	MessageType_DATA                      MessageType = 17
+	MessageType_ADD_REMOTE_NETWORK        MessageType = 18
+	MessageType_REMOVE_REMOTE_NETWORK     MessageType = 19
+	MessageType_CMD                       MessageType = 20
+	MessageType_CMD_RESPONSE              MessageType = 21
 )
 
 // Enum value maps for MessageType.
@@ -61,21 +60,20 @@ var (
 		5:  "ICE_ANSWER",
 		6:  "DNS_QUERY",
 		7:  "DNS_ANSWER",
-		8:  "DNS_OFFER",
-		9:  "ARP_REQUEST",
-		10: "ARP_RESPONSE",
-		11: "ARP_UPDATE",
-		12: "STREAM_DISCOVERY",
-		13: "STREAM_DISCOVERY_RESPONSE",
-		14: "STREAM_REQUEST",
-		15: "STREAM_RESPONSE",
-		16: "STREAM_UPDATE",
-		17: "ECHO",
-		18: "DATA",
-		19: "ADD_REMOTE_NETWORK",
-		20: "REMOVE_REMOTE_NETWORK",
-		21: "CMD",
-		22: "CMD_RESPONSE",
+		8:  "ARP_REQUEST",
+		9:  "ARP_RESPONSE",
+		10: "ARP_UPDATE",
+		11: "STREAM_DISCOVERY",
+		12: "STREAM_DISCOVERY_RESPONSE",
+		13: "STREAM_REQUEST",
+		14: "STREAM_RESPONSE",
+		15: "STREAM_UPDATE",
+		16: "ECHO",
+		17: "DATA",
+		18: "ADD_REMOTE_NETWORK",
+		19: "REMOVE_REMOTE_NETWORK",
+		20: "CMD",
+		21: "CMD_RESPONSE",
 	}
 	MessageType_value = map[string]int32{
 		"RTC_OFFER":                 0,
@@ -86,21 +84,20 @@ var (
 		"ICE_ANSWER":                5,
 		"DNS_QUERY":                 6,
 		"DNS_ANSWER":                7,
-		"DNS_OFFER":                 8,
-		"ARP_REQUEST":               9,
-		"ARP_RESPONSE":              10,
-		"ARP_UPDATE":                11,
-		"STREAM_DISCOVERY":          12,
-		"STREAM_DISCOVERY_RESPONSE": 13,
-		"STREAM_REQUEST":            14,
-		"STREAM_RESPONSE":           15,
-		"STREAM_UPDATE":             16,
-		"ECHO":                      17,
-		"DATA":                      18,
-		"ADD_REMOTE_NETWORK":        19,
-		"REMOVE_REMOTE_NETWORK":     20,
-		"CMD":                       21,
-		"CMD_RESPONSE":              22,
+		"ARP_REQUEST":               8,
+		"ARP_RESPONSE":              9,
+		"ARP_UPDATE":                10,
+		"STREAM_DISCOVERY":          11,
+		"STREAM_DISCOVERY_RESPONSE": 12,
+		"STREAM_REQUEST":            13,
+		"STREAM_RESPONSE":           14,
+		"STREAM_UPDATE":             15,
+		"ECHO":                      16,
+		"DATA":                      17,
+		"ADD_REMOTE_NETWORK":        18,
+		"REMOVE_REMOTE_NETWORK":     19,
+		"CMD":                       20,
+		"CMD_RESPONSE":              21,
 	}
 )
 
@@ -2300,7 +2297,7 @@ const file_veilnet_proto_rawDesc = "" +
 	"\x0fAddTaintRequest\x12\x1c\n" +
 	"\tsignature\x18\x01 \x01(\fR\tsignature\"2\n" +
 	"\x12RemoveTaintRequest\x12\x1c\n" +
-	"\tsignature\x18\x01 \x01(\fR\tsignature*\xa7\x03\n" +
+	"\tsignature\x18\x01 \x01(\fR\tsignature*\x98\x03\n" +
 	"\vMessageType\x12\r\n" +
 	"\tRTC_OFFER\x10\x00\x12\x0e\n" +
 	"\n" +
@@ -2312,24 +2309,23 @@ const file_veilnet_proto_rawDesc = "" +
 	"ICE_ANSWER\x10\x05\x12\r\n" +
 	"\tDNS_QUERY\x10\x06\x12\x0e\n" +
 	"\n" +
-	"DNS_ANSWER\x10\a\x12\r\n" +
-	"\tDNS_OFFER\x10\b\x12\x0f\n" +
-	"\vARP_REQUEST\x10\t\x12\x10\n" +
-	"\fARP_RESPONSE\x10\n" +
-	"\x12\x0e\n" +
+	"DNS_ANSWER\x10\a\x12\x0f\n" +
+	"\vARP_REQUEST\x10\b\x12\x10\n" +
+	"\fARP_RESPONSE\x10\t\x12\x0e\n" +
 	"\n" +
-	"ARP_UPDATE\x10\v\x12\x14\n" +
-	"\x10STREAM_DISCOVERY\x10\f\x12\x1d\n" +
-	"\x19STREAM_DISCOVERY_RESPONSE\x10\r\x12\x12\n" +
-	"\x0eSTREAM_REQUEST\x10\x0e\x12\x13\n" +
-	"\x0fSTREAM_RESPONSE\x10\x0f\x12\x11\n" +
-	"\rSTREAM_UPDATE\x10\x10\x12\b\n" +
-	"\x04ECHO\x10\x11\x12\b\n" +
-	"\x04DATA\x10\x12\x12\x16\n" +
-	"\x12ADD_REMOTE_NETWORK\x10\x13\x12\x19\n" +
-	"\x15REMOVE_REMOTE_NETWORK\x10\x14\x12\a\n" +
-	"\x03CMD\x10\x15\x12\x10\n" +
-	"\fCMD_RESPONSE\x10\x16*\\\n" +
+	"ARP_UPDATE\x10\n" +
+	"\x12\x14\n" +
+	"\x10STREAM_DISCOVERY\x10\v\x12\x1d\n" +
+	"\x19STREAM_DISCOVERY_RESPONSE\x10\f\x12\x12\n" +
+	"\x0eSTREAM_REQUEST\x10\r\x12\x13\n" +
+	"\x0fSTREAM_RESPONSE\x10\x0e\x12\x11\n" +
+	"\rSTREAM_UPDATE\x10\x0f\x12\b\n" +
+	"\x04ECHO\x10\x10\x12\b\n" +
+	"\x04DATA\x10\x11\x12\x16\n" +
+	"\x12ADD_REMOTE_NETWORK\x10\x12\x12\x19\n" +
+	"\x15REMOVE_REMOTE_NETWORK\x10\x13\x12\a\n" +
+	"\x03CMD\x10\x14\x12\x10\n" +
+	"\fCMD_RESPONSE\x10\x15*\\\n" +
 	"\aCmdType\x12\f\n" +
 	"\bSHUTDOWN\x10\x00\x12\x17\n" +
 	"\x13QUERY_LOCAL_NETWORK\x10\x01\x12\x18\n" +
@@ -2337,10 +2333,8 @@ const file_veilnet_proto_rawDesc = "" +
 	"\fSCOPE_UPDATE\x10\x03*!\n" +
 	"\x04Role\x12\f\n" +
 	"\bGUARDIAN\x10\x00\x12\v\n" +
-	"\aCONFLUX\x10\x012\xa0\x06\n" +
-	"\x06Anchor\x12>\n" +
-	"\fCreateAnchor\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12?\n" +
-	"\rDestroyAnchor\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12B\n" +
+	"\aCONFLUX\x10\x012\x9f\x05\n" +
+	"\x06Anchor\x12B\n" +
 	"\vStartAnchor\x12\x1b.veilnet.StartAnchorRequest\x1a\x16.google.protobuf.Empty\x12<\n" +
 	"\n" +
 	"StopAnchor\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12>\n" +
@@ -2421,32 +2415,28 @@ var file_veilnet_proto_depIdxs = []int32{
 	26, // 4: veilnet.RemoteNetworks.remote_networks:type_name -> veilnet.RemoteNetwork
 	1,  // 5: veilnet.Cmd.type:type_name -> veilnet.CmdType
 	33, // 6: veilnet.ScopeUpdate.scopes:type_name -> veilnet.Scope
-	42, // 7: veilnet.Anchor.CreateAnchor:input_type -> google.protobuf.Empty
-	42, // 8: veilnet.Anchor.DestroyAnchor:input_type -> google.protobuf.Empty
-	35, // 9: veilnet.Anchor.StartAnchor:input_type -> veilnet.StartAnchorRequest
-	42, // 10: veilnet.Anchor.StopAnchor:input_type -> google.protobuf.Empty
-	36, // 11: veilnet.Anchor.CreateTUN:input_type -> veilnet.CreateTUNRequest
-	42, // 12: veilnet.Anchor.DestroyTUN:input_type -> google.protobuf.Empty
-	42, // 13: veilnet.Anchor.AttachWithTUN:input_type -> google.protobuf.Empty
-	37, // 14: veilnet.Anchor.AttachWithFileDescriptor:input_type -> veilnet.AttachWithFileDescriptorRequest
-	42, // 15: veilnet.Anchor.GetID:input_type -> google.protobuf.Empty
-	42, // 16: veilnet.Anchor.GetCIDR:input_type -> google.protobuf.Empty
-	40, // 17: veilnet.Anchor.AddTaint:input_type -> veilnet.AddTaintRequest
-	41, // 18: veilnet.Anchor.RemoveTaint:input_type -> veilnet.RemoveTaintRequest
-	42, // 19: veilnet.Anchor.CreateAnchor:output_type -> google.protobuf.Empty
-	42, // 20: veilnet.Anchor.DestroyAnchor:output_type -> google.protobuf.Empty
-	42, // 21: veilnet.Anchor.StartAnchor:output_type -> google.protobuf.Empty
-	42, // 22: veilnet.Anchor.StopAnchor:output_type -> google.protobuf.Empty
-	42, // 23: veilnet.Anchor.CreateTUN:output_type -> google.protobuf.Empty
-	42, // 24: veilnet.Anchor.DestroyTUN:output_type -> google.protobuf.Empty
-	42, // 25: veilnet.Anchor.AttachWithTUN:output_type -> google.protobuf.Empty
-	42, // 26: veilnet.Anchor.AttachWithFileDescriptor:output_type -> google.protobuf.Empty
-	38, // 27: veilnet.Anchor.GetID:output_type -> veilnet.GetIDResponse
-	39, // 28: veilnet.Anchor.GetCIDR:output_type -> veilnet.GetCIDRResponse
-	42, // 29: veilnet.Anchor.AddTaint:output_type -> google.protobuf.Empty
-	42, // 30: veilnet.Anchor.RemoveTaint:output_type -> google.protobuf.Empty
-	19, // [19:31] is the sub-list for method output_type
-	7,  // [7:19] is the sub-list for method input_type
+	35, // 7: veilnet.Anchor.StartAnchor:input_type -> veilnet.StartAnchorRequest
+	42, // 8: veilnet.Anchor.StopAnchor:input_type -> google.protobuf.Empty
+	36, // 9: veilnet.Anchor.CreateTUN:input_type -> veilnet.CreateTUNRequest
+	42, // 10: veilnet.Anchor.DestroyTUN:input_type -> google.protobuf.Empty
+	42, // 11: veilnet.Anchor.AttachWithTUN:input_type -> google.protobuf.Empty
+	37, // 12: veilnet.Anchor.AttachWithFileDescriptor:input_type -> veilnet.AttachWithFileDescriptorRequest
+	42, // 13: veilnet.Anchor.GetID:input_type -> google.protobuf.Empty
+	42, // 14: veilnet.Anchor.GetCIDR:input_type -> google.protobuf.Empty
+	40, // 15: veilnet.Anchor.AddTaint:input_type -> veilnet.AddTaintRequest
+	41, // 16: veilnet.Anchor.RemoveTaint:input_type -> veilnet.RemoveTaintRequest
+	42, // 17: veilnet.Anchor.StartAnchor:output_type -> google.protobuf.Empty
+	42, // 18: veilnet.Anchor.StopAnchor:output_type -> google.protobuf.Empty
+	42, // 19: veilnet.Anchor.CreateTUN:output_type -> google.protobuf.Empty
+	42, // 20: veilnet.Anchor.DestroyTUN:output_type -> google.protobuf.Empty
+	42, // 21: veilnet.Anchor.AttachWithTUN:output_type -> google.protobuf.Empty
+	42, // 22: veilnet.Anchor.AttachWithFileDescriptor:output_type -> google.protobuf.Empty
+	38, // 23: veilnet.Anchor.GetID:output_type -> veilnet.GetIDResponse
+	39, // 24: veilnet.Anchor.GetCIDR:output_type -> veilnet.GetCIDRResponse
+	42, // 25: veilnet.Anchor.AddTaint:output_type -> google.protobuf.Empty
+	42, // 26: veilnet.Anchor.RemoveTaint:output_type -> google.protobuf.Empty
+	17, // [17:27] is the sub-list for method output_type
+	7,  // [7:17] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name
