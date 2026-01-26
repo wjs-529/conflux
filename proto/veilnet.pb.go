@@ -1837,8 +1837,6 @@ func (x *ScopeUpdate) GetScopes() []*Scope {
 type StartAnchorRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GuardianUrl   string                 `protobuf:"bytes,1,opt,name=guardian_url,json=guardianUrl,proto3" json:"guardian_url,omitempty"`
-	VeilUrl       string                 `protobuf:"bytes,2,opt,name=veil_url,json=veilUrl,proto3" json:"veil_url,omitempty"`
-	VeilPort      int32                  `protobuf:"varint,3,opt,name=veil_port,json=veilPort,proto3" json:"veil_port,omitempty"`
 	AnchorToken   string                 `protobuf:"bytes,4,opt,name=anchor_token,json=anchorToken,proto3" json:"anchor_token,omitempty"`
 	Portal        bool                   `protobuf:"varint,5,opt,name=portal,proto3" json:"portal,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1880,20 +1878,6 @@ func (x *StartAnchorRequest) GetGuardianUrl() string {
 		return x.GuardianUrl
 	}
 	return ""
-}
-
-func (x *StartAnchorRequest) GetVeilUrl() string {
-	if x != nil {
-		return x.VeilUrl
-	}
-	return ""
-}
-
-func (x *StartAnchorRequest) GetVeilPort() int32 {
-	if x != nil {
-		return x.VeilPort
-	}
-	return 0
 }
 
 func (x *StartAnchorRequest) GetAnchorToken() string {
@@ -2278,11 +2262,9 @@ const file_veilnet_proto_rawDesc = "" +
 	"\x05Scope\x12\x1c\n" +
 	"\tsignature\x18\x01 \x01(\fR\tsignature\"5\n" +
 	"\vScopeUpdate\x12&\n" +
-	"\x06scopes\x18\x01 \x03(\v2\x0e.veilnet.ScopeR\x06scopes\"\xaa\x01\n" +
+	"\x06scopes\x18\x01 \x03(\v2\x0e.veilnet.ScopeR\x06scopes\"r\n" +
 	"\x12StartAnchorRequest\x12!\n" +
-	"\fguardian_url\x18\x01 \x01(\tR\vguardianUrl\x12\x19\n" +
-	"\bveil_url\x18\x02 \x01(\tR\aveilUrl\x12\x1b\n" +
-	"\tveil_port\x18\x03 \x01(\x05R\bveilPort\x12!\n" +
+	"\fguardian_url\x18\x01 \x01(\tR\vguardianUrl\x12!\n" +
 	"\fanchor_token\x18\x04 \x01(\tR\vanchorToken\x12\x16\n" +
 	"\x06portal\x18\x05 \x01(\bR\x06portal\"<\n" +
 	"\x10CreateTUNRequest\x12\x16\n" +

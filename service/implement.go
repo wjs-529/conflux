@@ -49,8 +49,6 @@ func (s *ServiceImpl) Run() {
 	// Start the anchor
 	_, err = anchor.StartAnchor(context.Background(), &pb.StartAnchorRequest{
 		GuardianUrl: config.Guardian,
-		VeilUrl:     config.Veil,
-		VeilPort:    int32(config.VeilPort),
 		AnchorToken: config.Token,
 		Portal:      !config.Rift,
 	})

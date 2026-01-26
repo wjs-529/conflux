@@ -210,8 +210,6 @@ message ScopeUpdate {
 
 message StartAnchorRequest {
     string guardian_url = 1;
-    string veil_url = 2;
-    int32 veil_port = 3;
     string anchor_token = 4;
     bool portal = 5;
 }

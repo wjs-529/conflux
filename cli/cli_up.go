@@ -9,8 +9,6 @@ type Up struct {
 	ConfluxID string `short:"c" help:"The conflux ID, please keep it secret" env:"VEILNET_CONFLUX_ID" json:"conflux_id"`
 	Token     string `short:"t" help:"The conflux token, please keep it secret" env:"VEILNET_CONFLUX_TOKEN" json:"conflux_token"`
 	Guardian  string `help:"The Guardian URL (Authentication Server), default: https://guardian.veilnet.app" default:"https://guardian.veilnet.app" env:"VEILNET_GUARDIAN" json:"guardian"`
-	Veil      string `help:"The veil URL, default: nats.veilnet.app" default:"nats.veilnet.app" env:"VEILNET_VEIL" json:"veil"`
-	VeilPort  int    `help:"The veil port, default: 30422" default:"30422" env:"VEILNET_VEIL_PORT" json:"veil_port"`
 	Rift      bool   `short:"r" help:"Enable rift mode, default: false" default:"false" env:"VEILNET_RIFT" json:"rift"`
 }
 
@@ -20,8 +18,6 @@ func (cmd *Up) Run() error {
 		ConfluxID: cmd.ConfluxID,
 		Token:     cmd.Token,
 		Guardian:  cmd.Guardian,
-		Veil:      cmd.Veil,
-		VeilPort:  cmd.VeilPort,
 		Rift:      cmd.Rift,
 	}
 

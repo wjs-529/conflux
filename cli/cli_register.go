@@ -12,8 +12,6 @@ type Register struct {
 	RegistrationToken string   `short:"t" help:"The registration token" env:"VEILNET_REGISTRATION_TOKEN" json:"registration_token"`
 	Rift              bool     `short:"r" help:"Enable rift mode, default: false" default:"false" env:"VEILNET_RIFT" json:"rift"`
 	Guardian          string   `help:"The Guardian URL (Authentication Server), default: https://guardian.veilnet.app" default:"https://guardian.veilnet.app" env:"VEILNET_GUARDIAN" json:"guardian"`
-	Veil              string   `help:"The veil URL, default: nats.veilnet.app" default:"nats.veilnet.app" env:"VEILNET_VEIL" json:"veil"`
-	VeilPort          int      `help:"The veil port, default: 30422" default:"30422" env:"VEILNET_VEIL_PORT" json:"veil_port"`
 	Tag               string   `help:"The tag for the conflux" env:"VEILNET_CONFLUX_TAG" json:"tag"`
 	Cidr              string   `help:"The CIDR of the conflux" env:"VEILNET_CONFLUX_CIDR" json:"cidr"`
 	JWT               string   `help:"The JWT for the conflux" env:"VEILNET_CONFLUX_JWT" json:"jwt"`
@@ -36,7 +34,6 @@ func (cmd *Register) Run() error {
 		RegistrationToken: cmd.RegistrationToken,
 		Guardian:          cmd.Guardian,
 		Tag:               cmd.Tag,
-		Cidr:              cmd.Cidr,
 		JWT:               cmd.JWT,
 		JWKS_url:          cmd.JWKS_url,
 		Audience:          cmd.Audience,
@@ -71,8 +68,6 @@ func (cmd *Register) Run() error {
 		ConfluxID: registrationResponse.ConfluxID,
 		Token:     registrationResponse.Token,
 		Guardian:  cmd.Guardian,
-		Veil:      cmd.Veil,
-		VeilPort:  cmd.VeilPort,
 		Rift:      cmd.Rift,
 		Taints:    taints,
 	}

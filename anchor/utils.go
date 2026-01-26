@@ -15,8 +15,6 @@ type ConfluxConfig struct {
 	ConfluxID string   `json:"conflux_id" validate:"required"`
 	Token     string   `json:"conflux_token" validate:"required"`
 	Guardian  string   `json:"guardian" validate:"required"`
-	Veil      string   `json:"veil" validate:"required"`
-	VeilPort  int      `json:"veil_port" validate:"required"`
 	Rift      bool     `json:"rift" validate:"required"`
 	Taints    []string `json:"taints"`
 }
@@ -25,7 +23,6 @@ type ResgitrationRequest struct {
 	RegistrationToken string `json:"registration_token" validate:"required"`
 	Guardian          string `json:"guardian" validate:"required"`
 	Tag               string `json:"tag"`
-	Cidr              string `json:"cidr"`
 	JWT               string `json:"jwt"`
 	JWKS_url          string `json:"jwks_url"`
 	Audience          string `json:"audience"`
