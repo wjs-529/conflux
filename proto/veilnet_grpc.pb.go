@@ -31,6 +31,7 @@ const (
 	Anchor_GetInfo_FullMethodName                  = "/veilnet.Anchor/GetInfo"
 	Anchor_GetRealmInfo_FullMethodName             = "/veilnet.Anchor/GetRealmInfo"
 	Anchor_GetVeilInfo_FullMethodName              = "/veilnet.Anchor/GetVeilInfo"
+	Anchor_GetTracerConfig_FullMethodName          = "/veilnet.Anchor/GetTracerConfig"
 )
 
 // AnchorClient is the client API for Anchor service.
@@ -48,6 +49,7 @@ type AnchorClient interface {
 	GetInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetInfoResponse, error)
 	GetRealmInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetRealmInfoResponse, error)
 	GetVeilInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetVeilInfoResponse, error)
+	GetTracerConfig(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TracerConfig, error)
 }
 
 type anchorClient struct {
@@ -168,6 +170,16 @@ func (c *anchorClient) GetVeilInfo(ctx context.Context, in *emptypb.Empty, opts 
 	return out, nil
 }
 
+func (c *anchorClient) GetTracerConfig(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TracerConfig, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TracerConfig)
+	err := c.cc.Invoke(ctx, Anchor_GetTracerConfig_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AnchorServer is the server API for Anchor service.
 // All implementations must embed UnimplementedAnchorServer
 // for forward compatibility.
@@ -183,6 +195,7 @@ type AnchorServer interface {
 	GetInfo(context.Context, *emptypb.Empty) (*GetInfoResponse, error)
 	GetRealmInfo(context.Context, *emptypb.Empty) (*GetRealmInfoResponse, error)
 	GetVeilInfo(context.Context, *emptypb.Empty) (*GetVeilInfoResponse, error)
+	GetTracerConfig(context.Context, *emptypb.Empty) (*TracerConfig, error)
 	mustEmbedUnimplementedAnchorServer()
 }
 
@@ -225,6 +238,9 @@ func (UnimplementedAnchorServer) GetRealmInfo(context.Context, *emptypb.Empty) (
 }
 func (UnimplementedAnchorServer) GetVeilInfo(context.Context, *emptypb.Empty) (*GetVeilInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVeilInfo not implemented")
+}
+func (UnimplementedAnchorServer) GetTracerConfig(context.Context, *emptypb.Empty) (*TracerConfig, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTracerConfig not implemented")
 }
 func (UnimplementedAnchorServer) mustEmbedUnimplementedAnchorServer() {}
 func (UnimplementedAnchorServer) testEmbeddedByValue()                {}
@@ -445,6 +461,24 @@ func _Anchor_GetVeilInfo_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Anchor_GetTracerConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AnchorServer).GetTracerConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Anchor_GetTracerConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AnchorServer).GetTracerConfig(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Anchor_ServiceDesc is the grpc.ServiceDesc for Anchor service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -495,6 +529,10 @@ var Anchor_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetVeilInfo",
 			Handler:    _Anchor_GetVeilInfo_Handler,
+		},
+		{
+			MethodName: "GetTracerConfig",
+			Handler:    _Anchor_GetTracerConfig_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

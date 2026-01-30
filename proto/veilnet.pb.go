@@ -2560,7 +2560,7 @@ const file_veilnet_proto_rawDesc = "" +
 	"\fSCOPE_UPDATE\x10\x03*!\n" +
 	"\x04Role\x12\f\n" +
 	"\bGUARDIAN\x10\x00\x12\v\n" +
-	"\aCONFLUX\x10\x012\xf2\x05\n" +
+	"\aCONFLUX\x10\x012\xb4\x06\n" +
 	"\x06Anchor\x12B\n" +
 	"\vStartAnchor\x12\x1b.veilnet.StartAnchorRequest\x1a\x16.google.protobuf.Empty\x12<\n" +
 	"\n" +
@@ -2574,7 +2574,8 @@ const file_veilnet_proto_rawDesc = "" +
 	"\vRemoveTaint\x12\x1b.veilnet.RemoveTaintRequest\x1a\x16.google.protobuf.Empty\x12;\n" +
 	"\aGetInfo\x12\x16.google.protobuf.Empty\x1a\x18.veilnet.GetInfoResponse\x12E\n" +
 	"\fGetRealmInfo\x12\x16.google.protobuf.Empty\x1a\x1d.veilnet.GetRealmInfoResponse\x12C\n" +
-	"\vGetVeilInfo\x12\x16.google.protobuf.Empty\x1a\x1c.veilnet.GetVeilInfoResponseB#Z!github.com/veil-net/conflux/protob\x06proto3"
+	"\vGetVeilInfo\x12\x16.google.protobuf.Empty\x1a\x1c.veilnet.GetVeilInfoResponse\x12@\n" +
+	"\x0fGetTracerConfig\x12\x16.google.protobuf.Empty\x1a\x15.veilnet.TracerConfigB#Z!github.com/veil-net/conflux/protob\x06proto3"
 
 var (
 	file_veilnet_proto_rawDescOnce sync.Once
@@ -2657,19 +2658,21 @@ var file_veilnet_proto_depIdxs = []int32{
 	44, // 16: veilnet.Anchor.GetInfo:input_type -> google.protobuf.Empty
 	44, // 17: veilnet.Anchor.GetRealmInfo:input_type -> google.protobuf.Empty
 	44, // 18: veilnet.Anchor.GetVeilInfo:input_type -> google.protobuf.Empty
-	44, // 19: veilnet.Anchor.StartAnchor:output_type -> google.protobuf.Empty
-	44, // 20: veilnet.Anchor.StopAnchor:output_type -> google.protobuf.Empty
-	44, // 21: veilnet.Anchor.CreateTUN:output_type -> google.protobuf.Empty
-	44, // 22: veilnet.Anchor.DestroyTUN:output_type -> google.protobuf.Empty
-	44, // 23: veilnet.Anchor.AttachWithTUN:output_type -> google.protobuf.Empty
-	44, // 24: veilnet.Anchor.AttachWithFileDescriptor:output_type -> google.protobuf.Empty
-	44, // 25: veilnet.Anchor.AddTaint:output_type -> google.protobuf.Empty
-	44, // 26: veilnet.Anchor.RemoveTaint:output_type -> google.protobuf.Empty
-	41, // 27: veilnet.Anchor.GetInfo:output_type -> veilnet.GetInfoResponse
-	42, // 28: veilnet.Anchor.GetRealmInfo:output_type -> veilnet.GetRealmInfoResponse
-	43, // 29: veilnet.Anchor.GetVeilInfo:output_type -> veilnet.GetVeilInfoResponse
-	19, // [19:30] is the sub-list for method output_type
-	8,  // [8:19] is the sub-list for method input_type
+	44, // 19: veilnet.Anchor.GetTracerConfig:input_type -> google.protobuf.Empty
+	44, // 20: veilnet.Anchor.StartAnchor:output_type -> google.protobuf.Empty
+	44, // 21: veilnet.Anchor.StopAnchor:output_type -> google.protobuf.Empty
+	44, // 22: veilnet.Anchor.CreateTUN:output_type -> google.protobuf.Empty
+	44, // 23: veilnet.Anchor.DestroyTUN:output_type -> google.protobuf.Empty
+	44, // 24: veilnet.Anchor.AttachWithTUN:output_type -> google.protobuf.Empty
+	44, // 25: veilnet.Anchor.AttachWithFileDescriptor:output_type -> google.protobuf.Empty
+	44, // 26: veilnet.Anchor.AddTaint:output_type -> google.protobuf.Empty
+	44, // 27: veilnet.Anchor.RemoveTaint:output_type -> google.protobuf.Empty
+	41, // 28: veilnet.Anchor.GetInfo:output_type -> veilnet.GetInfoResponse
+	42, // 29: veilnet.Anchor.GetRealmInfo:output_type -> veilnet.GetRealmInfoResponse
+	43, // 30: veilnet.Anchor.GetVeilInfo:output_type -> veilnet.GetVeilInfoResponse
+	35, // 31: veilnet.Anchor.GetTracerConfig:output_type -> veilnet.TracerConfig
+	20, // [20:32] is the sub-list for method output_type
+	8,  // [8:20] is the sub-list for method input_type
 	8,  // [8:8] is the sub-list for extension type_name
 	8,  // [8:8] is the sub-list for extension extendee
 	0,  // [0:8] is the sub-list for field type_name

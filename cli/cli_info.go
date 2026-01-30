@@ -12,6 +12,7 @@ type Info struct {
 	Conflux InfoConflux `cmd:"conflux" default:"1" help:"Show conflux info (ID, tag, UID, CIDR, portal, public)"`
 	Realm   InfoRealm   `cmd:"realm" help:"Show realm info (realm, realm ID, subnet)"`
 	Veil    InfoVeil    `cmd:"veil" help:"Show veil connection info (host, port, region)"`
+	Tracer  InfoTracer  `cmd:"tracer" help:"Show tracer config (enabled, endpoint, use TLS, insecure, CA, cert, key)"`
 }
 
 type InfoConflux struct{}
@@ -77,5 +78,30 @@ func (cmd *InfoVeil) Run() error {
 	fmt.Printf("  %-10s %s\n", "Host:", info.GetVeilHost())
 	fmt.Printf("  %-10s %d\n", "Port:", info.GetVeilPort())
 	fmt.Printf("  %-10s %s\n", "Region:", info.GetRegion())
+	return nil
+}
+
+type InfoTracer struct{}
+
+func (cmd *InfoTracer) Run() error {
+	client, err := anchor.NewAnchorClient()
+	if err != nil {
+		Logger.Sugar().Errorf("failed to create anchor gRPC client: %v", err)
+		return err
+	}
+	info, err := client.GetTracerConfig(context.Background(), &emptypb.Empty{})
+	if err != nil {
+		Logger.Sugar().Errorf("failed to get tracer config: %v", err)
+		return err
+	}
+	fmt.Println("Tracer Info")
+	fmt.Println("-------------")
+	fmt.Printf("  %-10s %v\n", "Enabled:", info.GetEnabled())
+	fmt.Printf("  %-10s %s\n", "Endpoint:", info.GetEndpoint())
+	fmt.Printf("  %-10s %v\n", "Use TLS:", info.GetUseTls())
+	fmt.Printf("  %-10s %v\n", "Insecure:", info.GetInsecure())
+	fmt.Printf("  %-10s %s\n", "CA:", info.GetCa())
+	fmt.Printf("  %-10s %s\n", "Cert:", info.GetCert())
+	fmt.Printf("  %-10s %s\n", "Key:", info.GetKey())
 	return nil
 }

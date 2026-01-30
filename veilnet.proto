@@ -276,4 +276,5 @@ service Anchor {
     rpc GetInfo(google.protobuf.Empty) returns (GetInfoResponse);
     rpc GetRealmInfo(google.protobuf.Empty) returns (GetRealmInfoResponse);
     rpc GetVeilInfo(google.protobuf.Empty) returns (GetVeilInfoResponse);
+    rpc GetTracerConfig(google.protobuf.Empty) returns (TracerConfig);
 }
