@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package veilnet;
 
-option go_package = "github.com/veil-net/conflux/proto";
+option go_package = "github.com/veil-net/veilnet/proto";
 
 import "google/protobuf/empty.proto";
 
@@ -44,6 +44,9 @@ enum CmdType {
     QUERY_LOCAL_NETWORK=1;
     QUERY_REMOTE_NETWORK=2;
     SCOPE_UPDATE = 3;
+    ADD_TAINT = 4;
+    REMOVE_TAINT = 5;
+    QUERY_TAINTS = 6;
 }
 
 enum Role {
@@ -191,11 +194,12 @@ message Shutdown{
 }
 
 message QueryLocalNetwork {
+    string signature = 1;
 
 }
 
 message QueryRemoteNetwork {
-    
+    string signature = 1;
 }
 
 message Scope{
@@ -204,6 +208,19 @@ message Scope{
 
 message ScopeUpdate {
     repeated Scope scopes = 1;
+}
+
+message Taint {
+    string taint = 1;
+    bytes signature = 2;
+}
+
+message Taints {
+    repeated Taint taints = 1;
+}
+
+message QueryTaints {
+    string signature = 1;
 }
 
 // gRPC messages
