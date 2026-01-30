@@ -52,6 +52,15 @@ func (s *ServiceImpl) Run() {
 		AnchorToken: config.Token,
 		Ip:          config.IP,
 		Portal:      !config.Rift,
+		Tracer: &pb.TracerConfig{
+			Enabled:  config.Tracer.Enabled,
+			Endpoint: config.Tracer.Endpoint,
+			UseTls:   config.Tracer.UseTLS,
+			Insecure: config.Tracer.Insecure,
+			Ca:       config.Tracer.CAFile,
+			Cert:     config.Tracer.CertFile,
+			Key:      config.Tracer.KeyFile,
+		},
 	})
 	if err != nil {
 		Logger.Sugar().Errorf("failed to start anchor: %v", err)

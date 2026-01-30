@@ -11,13 +11,24 @@ import (
 	"runtime"
 )
 
+type TracerConfig struct {
+	Enabled  bool   `json:"enabled" validate:"required"`
+	Endpoint string `json:"endpoint" validate:"required"`
+	UseTLS   bool   `json:"use_tls" validate:"required"`
+	Insecure bool   `json:"insecure" validate:"required"`
+	CAFile   string `json:"ca_file" validate:"required"`
+	CertFile string `json:"cert_file" validate:"required"`
+	KeyFile  string `json:"key_file" validate:"required"`
+}
+
 type ConfluxConfig struct {
-	ConfluxID string   `json:"conflux_id" validate:"required"`
-	Token     string   `json:"conflux_token" validate:"required"`
-	Guardian  string   `json:"guardian" validate:"required"`
-	Rift      bool     `json:"rift" validate:"required"`
-	IP        string   `json:"ip" validate:"required"`
-	Taints    []string `json:"taints"`
+	ConfluxID string        `json:"conflux_id" validate:"required"`
+	Token     string        `json:"conflux_token" validate:"required"`
+	Guardian  string        `json:"guardian" validate:"required"`
+	Rift      bool          `json:"rift" validate:"required"`
+	IP        string        `json:"ip" validate:"required"`
+	Taints    []string      `json:"taints"`
+	Tracer    *TracerConfig `json:"tracer"`
 }
 
 type ResgitrationRequest struct {

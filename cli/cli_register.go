@@ -25,6 +25,13 @@ type Register struct {
 	Issuer            string   `help:"The issuer for the conflux" env:"VEILNET_CONFLUX_ISSUER" json:"issuer"`
 	Taints            []string `help:"Taints for the conflux, conflux can only communicate with other conflux with taints that are either a super set or a subset" env:"VEILNET_CONFLUX_TAINTS" json:"taints"`
 	Debug             bool     `short:"d" help:"Enable debug mode, this will not install the service but run conflux directly" env:"VEILNET_DEBUG" json:"debug"`
+	Tracer            bool     `help:"Enable tracer, default: false" default:"false" env:"VEILNET_TRACER" json:"tracer"`
+	OTLPEndpoint      string   `help:"The OTLP endpoint for the metrics" env:"VEILNET_OTLP_ENDPOINT" json:"otlp_endpoint"`
+	OTLPUseTLS        bool     `help:"Enable TLS for the metrics" default:"false" env:"VEILNET_OTLP_USE_TLS" json:"otlp_use_tls"`
+	OTLPInsecure      bool     `help:"Enable insecure mode for the metrics" default:"false" env:"VEILNET_OTLP_INSECURE" json:"otlp_insecure"`
+	OTLPCACert        string   `help:"The OTLP CA certificate for the metrics" env:"VEILNET_OTLP_CA_CERT" json:"otlp_ca_cert"`
+	OTLPClientCert    string   `help:"The OTLP client certificate for the metrics" env:"VEILNET_OTLP_CLIENT_CERT" json:"otlp_client_cert"`
+	OTLPClientKey     string   `help:"The OTLP client key for the metrics" env:"VEILNET_OTLP_CLIENT_KEY" json:"otlp_client_key"`
 }
 
 type ConfluxToken struct {
@@ -53,6 +60,15 @@ func (cmd *Register) Run() error {
 	}
 
 	// Save the configuration
+	tracerConfig := &anchor.TracerConfig{
+		Enabled:  cmd.Tracer,
+		UseTLS:   cmd.OTLPUseTLS,
+		Endpoint: cmd.OTLPEndpoint,
+		Insecure: cmd.OTLPInsecure,
+		CAFile:   cmd.OTLPCACert,
+		CertFile: cmd.OTLPClientCert,
+		KeyFile:  cmd.OTLPClientKey,
+	}
 	config := &anchor.ConfluxConfig{
 		ConfluxID: registrationResponse.ConfluxID,
 		Token:     registrationResponse.Token,
@@ -60,6 +76,7 @@ func (cmd *Register) Run() error {
 		Rift:      cmd.Rift,
 		IP:        cmd.IP,
 		Taints:    cmd.Taints,
+		Tracer:    tracerConfig,
 	}
 
 	if !cmd.Debug {
@@ -109,6 +126,15 @@ func (cmd *Register) Run() error {
 		AnchorToken: config.Token,
 		Ip:          config.IP,
 		Portal:      !config.Rift,
+		Tracer: &pb.TracerConfig{
+			Enabled:  config.Tracer.Enabled,
+			Endpoint: config.Tracer.Endpoint,
+			UseTls:   config.Tracer.UseTLS,
+			Insecure: config.Tracer.Insecure,
+			Ca:       config.Tracer.CAFile,
+			Cert:     config.Tracer.CertFile,
+			Key:      config.Tracer.KeyFile,
+		},
 	})
 	if err != nil {
 		Logger.Sugar().Errorf("failed to start anchor: %v", err)

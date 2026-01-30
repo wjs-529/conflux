@@ -208,11 +208,22 @@ message ScopeUpdate {
 
 // gRPC messages
 
+message TracerConfig {
+    bool enabled = 1;
+    string endpoint = 2;
+    bool use_tls = 3;
+    bool insecure = 4;
+    string ca = 5;
+    string cert = 6;
+    string key = 7;
+}
+
 message StartAnchorRequest {
     string guardian_url = 1;
     string anchor_token = 2;
     string ip = 3;
     bool portal = 4;
+    TracerConfig tracer = 5;
 }
 
 message CreateTUNRequest {
