@@ -28,6 +28,13 @@ type TracerConfig struct {
 	KeyFile  string `json:"key_file" validate:"required"`
 }
 
+type IDPConfig struct {
+	JWT string `json:"jwt" validate:"required"`
+	JWKS_url string `json:"jwks_url" validate:"required"`
+	Audience string `json:"audience" validate:"required"`
+	Issuer string `json:"issuer" validate:"required"`
+}
+
 // ConfluxConfig holds conflux runtime config (ID, token, guardian, rift/portal, IP, taints, tracer).
 type ConfluxConfig struct {
 	ConfluxID string        `json:"conflux_id" validate:"required"`
@@ -252,7 +259,7 @@ func UnregisterConflux(registrationToken string, config *ConfluxConfig) error {
 //   - subprocess: *exec.Cmd. The started anchor subprocess.
 //   - anchor: pb.AnchorClient. The gRPC client.
 //   - err: error. Non-nil if registration or anchor start fails.
-func StartConflux(token string, ip string, tag string, jwt string, jwks_url string, audience string, issuer string, tracer *TracerConfig) (subprocess *exec.Cmd, anchor pb.AnchorClient, err error) {
+func StartConflux(token string, ip string, tag string, idp *IDPConfig, tracer *TracerConfig) (subprocess *exec.Cmd, anchor pb.AnchorClient, err error) {
 
 
 	guardian := "https://guardian.veilnet.app"
@@ -262,10 +269,13 @@ func StartConflux(token string, ip string, tag string, jwt string, jwks_url stri
 		RegistrationToken: token,
 		Guardian:          guardian,
 		Tag:               tag,
-		JWT:               jwt,
-		JWKS_url:          jwks_url,
-		Audience:          audience,
-		Issuer:            issuer,
+	}
+
+	if idp != nil {
+		registrationRequest.JWT = idp.JWT
+		registrationRequest.JWKS_url = idp.JWKS_url
+		registrationRequest.Audience = idp.Audience
+		registrationRequest.Issuer = idp.Issuer
 	}
 
 	// Register the conflux
