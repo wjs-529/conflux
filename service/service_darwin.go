@@ -10,6 +10,7 @@ import (
 	"text/template"
 )
 
+// LaunchDaemonPlistTemplate is the LaunchDaemon plist template for the conflux service.
 const LaunchDaemonPlistTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -32,10 +33,12 @@ const LaunchDaemonPlistTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 </plist>
 `
 
+// service is the Darwin implementation holding the ServiceImpl.
 type service struct {
 	serviceImpl *ServiceImpl
 }
 
+// newService returns the Darwin-specific service.
 func newService() *service {
 	serviceImpl := NewServiceImpl()
 	return &service{
@@ -43,6 +46,13 @@ func newService() *service {
 	}
 }
 
+// Run delegates to the service implementation (runs the anchor in the foreground).
+//
+// Inputs:
+//   - s: *service. Wraps the ServiceImpl.
+//
+// Outputs:
+//   - err: error. Non-nil if delegation fails.
 func (s *service) Run() error {
 
 	// Run the API
@@ -51,6 +61,13 @@ func (s *service) Run() error {
 	return nil
 }
 
+// Install installs and starts the conflux service via LaunchDaemon (launchctl bootstrap).
+//
+// Inputs:
+//   - s: *service. The Darwin service.
+//
+// Outputs:
+//   - err: error. Non-nil if the template, file write, or system command fails.
 func (s *service) Install() error {
 	// Get current executable path
 	exePath, err := os.Executable()
@@ -95,6 +112,13 @@ func (s *service) Install() error {
 	return nil
 }
 
+// Start starts the conflux service via launchctl bootstrap.
+//
+// Inputs:
+//   - s: *service. The Darwin service.
+//
+// Outputs:
+//   - err: error. Non-nil if the system command fails.
 func (s *service) Start() error {
 	plistFile := "/Library/LaunchDaemons/org.veilnet.conflux.plist"
 	err := ExecuteCmd("launchctl", "bootstrap", "system", plistFile)
@@ -105,6 +129,13 @@ func (s *service) Start() error {
 	return nil
 }
 
+// Stop stops the conflux service via launchctl bootout.
+//
+// Inputs:
+//   - s: *service. The Darwin service.
+//
+// Outputs:
+//   - err: error. Non-nil if the system command fails.
 func (s *service) Stop() error {
 	plistFile := "/Library/LaunchDaemons/org.veilnet.conflux.plist"
 	err := ExecuteCmd("launchctl", "bootout", "system", plistFile)
@@ -115,6 +146,13 @@ func (s *service) Stop() error {
 	return nil
 }
 
+// Remove stops the service via launchctl bootout and deletes the plist file.
+//
+// Inputs:
+//   - s: *service. The Darwin service.
+//
+// Outputs:
+//   - err: error. Non-nil if a step fails.
 func (s *service) Remove() error {
 	plistFile := "/Library/LaunchDaemons/org.veilnet.conflux.plist"
 	err := ExecuteCmd("launchctl", "bootout", "system", plistFile)
@@ -130,6 +168,13 @@ func (s *service) Remove() error {
 	return nil
 }
 
+// Status reports the conflux service status via launchctl list.
+//
+// Inputs:
+//   - s: *service. The Darwin service.
+//
+// Outputs:
+//   - err: error. Non-nil if the system command fails.
 func (s *service) Status() error {
 	// Check if the service is running
 	err := ExecuteCmd("launchctl", "list", "org.veilnet.conflux")

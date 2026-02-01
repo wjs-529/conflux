@@ -12,13 +12,26 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// ServiceImpl is the concrete implementation that runs the anchor (load config, start subprocess, gRPC client, handle signals).
 type ServiceImpl struct {
 }
 
+// NewServiceImpl returns a new ServiceImpl.
+//
+// Inputs: none.
+//
+// Outputs:
+//   - *ServiceImpl. A new ServiceImpl.
 func NewServiceImpl() *ServiceImpl {
 	return &ServiceImpl{}
 }
 
+// Run runs the anchor in the foreground until interrupt (loads config, starts subprocess and gRPC client, handles signals).
+//
+// Inputs:
+//   - s: *ServiceImpl. The implementation; uses config from the default config file.
+//
+// Outputs: none. Does not return; runs until process interrupt (SIGINT/SIGTERM).
 func (s *ServiceImpl) Run() {
 
 	// Load the configuration

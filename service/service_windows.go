@@ -15,10 +15,12 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// service is the Windows implementation holding the ServiceImpl; it implements svc.Handler via Execute.
 type service struct {
 	serviceImpl *ServiceImpl
 }
 
+// newService returns the Windows-specific service.
 func newService() *service {
 	serviceImpl := NewServiceImpl()
 	return &service{
@@ -26,6 +28,13 @@ func newService() *service {
 	}
 }
 
+// Run either runs as a Windows SCM service (if already a service) or delegates to the service implementation.
+//
+// Inputs:
+//   - s: *service. Wraps the ServiceImpl.
+//
+// Outputs:
+//   - err: error. Non-nil if delegation or svc.Run fails.
 func (s *service) Run() error {
 	// Check if the conflux is running as a Windows service
 	isWindowsService, err := svc.IsWindowsService()
@@ -46,6 +55,13 @@ func (s *service) Run() error {
 	return nil
 }
 
+// Install creates and starts the conflux service in the Windows SCM.
+//
+// Inputs:
+//   - s: *service. The Windows service.
+//
+// Outputs:
+//   - err: error. Non-nil if the SCM call fails.
 func (s *service) Install() error {
 
 	// Get the executable path
@@ -88,6 +104,13 @@ func (s *service) Install() error {
 	return nil
 }
 
+// Start starts the conflux service via the Windows SCM.
+//
+// Inputs:
+//   - s: *service. The Windows service.
+//
+// Outputs:
+//   - err: error. Non-nil if the SCM call fails.
 func (s *service) Start() error {
 	// Connect to the service manager
 	m, err := mgr.Connect()
@@ -116,6 +139,13 @@ func (s *service) Start() error {
 	return nil
 }
 
+// Stop stops the conflux service via the Windows SCM.
+//
+// Inputs:
+//   - s: *service. The Windows service.
+//
+// Outputs:
+//   - err: error. Non-nil if the SCM call fails.
 func (s *service) Stop() error {
 	// Connect to the service manager
 	m, err := mgr.Connect()
@@ -144,6 +174,13 @@ func (s *service) Stop() error {
 	return nil
 }
 
+// Remove stops the service, deletes it from the SCM, and reports success.
+//
+// Inputs:
+//   - s: *service. The Windows service.
+//
+// Outputs:
+//   - err: error. Non-nil if a step fails.
 func (s *service) Remove() error {
 	// Connect to the service manager
 	m, err := mgr.Connect()
@@ -180,12 +217,19 @@ func (s *service) Remove() error {
 	return nil
 }
 
+// Status reports the conflux service status from the Windows SCM.
+//
+// Inputs:
+//   - s: *service. The Windows service.
+//
+// Outputs:
+//   - err: error. Non-nil if the SCM query fails.
 func (s *service) Status() error {
 	// Connect to the service manager
 	m, err := mgr.Connect()
 	if err != nil {
 		Logger.Sugar().Errorf("failed to connect to service manager: %v", err)
-		return err	
+		return err
 	}
 	defer m.Disconnect()
 
@@ -207,6 +251,17 @@ func (s *service) Status() error {
 	return nil
 }
 
+// Execute implements the Windows service handler: StartPending, start anchor, Running, then handle Stop, Shutdown, and Interrogate.
+//
+// Inputs:
+//   - s: *service. The Windows service.
+//   - args: []string. Service arguments.
+//   - changeRequests: <-chan svc.ChangeRequest. Windows SCM control requests.
+//   - changes: chan<- svc.Status. Windows SCM status updates.
+//
+// Outputs:
+//   - ssec: bool. As required by the svc package.
+//   - errno: uint32. As required by the svc package; 0 when the service stops.
 func (s *service) Execute(args []string, changeRequests <-chan svc.ChangeRequest, changes chan<- svc.Status) (ssec bool, errno uint32) {
 
 	// Signal the service is starting

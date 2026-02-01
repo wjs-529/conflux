@@ -8,15 +8,24 @@ import (
 	pb "github.com/veil-net/conflux/proto"
 )
 
+// Taint adds or removes taints via add/remove subcommands.
 type Taint struct {
 	Add    TaintAdd    `cmd:"add" help:"Add a taint"`
 	Remove TaintRemove `cmd:"remove" help:"Remove a taint"`
 }
 
+// TaintAdd adds a taint to the conflux (e.g. dev, prod).
 type TaintAdd struct {
-	Taint string `arg:"" help:"The taint to add (e.g. key=value)"`
+	Taint string `arg:"" help:"The taint to add (e.g. dev, prod)"`
 }
 
+// Run adds the taint via the anchor client and updates the local config.
+//
+// Inputs:
+//   - cmd: *TaintAdd. cmd.Taint is the taint string (e.g. dev, prod).
+//
+// Outputs:
+//   - err: error. Non-nil if the client or config update fails.
 func (cmd *TaintAdd) Run() error {
 	client, err := anchor.NewAnchorClient()
 	if err != nil {
@@ -51,10 +60,18 @@ func (cmd *TaintAdd) Run() error {
 	return nil
 }
 
+// TaintRemove removes a taint from the conflux.
 type TaintRemove struct {
 	Taint string `arg:"" help:"The taint to remove"`
 }
 
+// Run removes the taint via the anchor client and updates the local config.
+//
+// Inputs:
+//   - cmd: *TaintRemove. cmd.Taint is the taint to remove.
+//
+// Outputs:
+//   - err: error. Non-nil if the client or config update fails.
 func (cmd *TaintRemove) Run() error {
 	client, err := anchor.NewAnchorClient()
 	if err != nil {

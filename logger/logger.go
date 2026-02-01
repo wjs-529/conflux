@@ -1,3 +1,4 @@
+// Package logger provides the global zap logger for the application.
 package logger
 
 import (
@@ -9,6 +10,11 @@ import (
 // Use Logger.Sugar() to get a SugaredLogger which supports Infof, Errorf, etc.
 var Logger *zap.Logger
 
+// init initializes the development zap config with colors and ISO8601 time format.
+//
+// Inputs: none.
+//
+// Outputs: none. Panics if the zap config cannot be built.
 func init() {
 	// Configure Zap for development with colors
 	config := zap.NewDevelopmentConfig()

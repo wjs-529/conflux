@@ -10,6 +10,7 @@ import (
 	"text/template"
 )
 
+// SystemdUnitTemplate is the systemd unit file template for the conflux service.
 const SystemdUnitTemplate = `[Unit]
 Description=VeilNet Service
 After=network.target
@@ -31,10 +32,12 @@ KillSignal=SIGTERM
 WantedBy=multi-user.target
 `
 
+// service is the Linux implementation holding the ServiceImpl.
 type service struct {
 	serviceImpl *ServiceImpl
 }
 
+// newService returns the Linux-specific service.
 func newService() *service {
 	serviceImpl := NewServiceImpl()
 	return &service{
@@ -42,6 +45,13 @@ func newService() *service {
 	}
 }
 
+// Run delegates to the service implementation (runs the anchor in the foreground).
+//
+// Inputs:
+//   - s: *service. Wraps the ServiceImpl.
+//
+// Outputs:
+//   - err: error. Non-nil if delegation fails.
 func (s *service) Run() error {
 
 	// Run the API
@@ -50,6 +60,13 @@ func (s *service) Run() error {
 	return nil
 }
 
+// Install installs and starts the conflux service via systemd.
+//
+// Inputs:
+//   - s: *service. The Linux service.
+//
+// Outputs:
+//   - err: error. Non-nil if the template, file write, or system command fails.
 func (s *service) Install() error {
 	// Get current executable path
 	exePath, err := os.Executable()
@@ -104,6 +121,13 @@ func (s *service) Install() error {
 	return nil
 }
 
+// Start starts the conflux service via systemctl.
+//
+// Inputs:
+//   - s: *service. The Linux service.
+//
+// Outputs:
+//   - err: error. Non-nil if the system command fails.
 func (s *service) Start() error {
 	err := ExecuteCmd("systemctl", "start", "veilnet")
 	if err != nil {
@@ -113,6 +137,13 @@ func (s *service) Start() error {
 	return nil
 }
 
+// Stop stops the conflux service via systemctl.
+//
+// Inputs:
+//   - s: *service. The Linux service.
+//
+// Outputs:
+//   - err: error. Non-nil if the system command fails.
 func (s *service) Stop() error {
 	err := ExecuteCmd("systemctl", "stop", "veilnet")
 	if err != nil {
@@ -122,6 +153,13 @@ func (s *service) Stop() error {
 	return nil
 }
 
+// Remove stops, disables, and removes the systemd unit file; then reloads systemd.
+//
+// Inputs:
+//   - s: *service. The Linux service.
+//
+// Outputs:
+//   - err: error. Non-nil if a step fails.
 func (s *service) Remove() error {
 	err := ExecuteCmd("systemctl", "stop", "veilnet")
 	if err != nil {
@@ -149,6 +187,13 @@ func (s *service) Remove() error {
 	return nil
 }
 
+// Status reports the conflux service status via systemctl.
+//
+// Inputs:
+//   - s: *service. The Linux service.
+//
+// Outputs:
+//   - err: error. Non-nil if the system command fails.
 func (s *service) Status() error {
 	// Check if the service is running
 	err := ExecuteCmd("systemctl", "status", "veilnet")

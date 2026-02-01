@@ -13,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// Up starts the veilnet service with a conflux token; flags include conflux ID, token, guardian, rift/portal, IP, taints, and debug.
 type Up struct {
 	ConfluxID string   `short:"c" help:"The conflux ID, please keep it secret" env:"VEILNET_CONFLUX_ID" json:"conflux_id"`
 	Token     string   `short:"t" help:"The conflux token, please keep it secret" env:"VEILNET_CONFLUX_TOKEN" json:"conflux_token"`
@@ -24,6 +25,13 @@ type Up struct {
 	Debug     bool     `short:"d" help:"Enable debug mode, this will not install the service but run conflux directly" env:"VEILNET_CONFLUX_DEBUG" json:"debug"`
 }
 
+// Run saves config and either installs the service or runs the anchor in debug mode.
+//
+// Inputs:
+//   - cmd: *Up. Conflux ID, token, guardian, rift/portal, IP, taints, debug.
+//
+// Outputs:
+//   - err: error. Non-nil if config save, service install, or anchor start fails.
 func (cmd *Up) Run() error {
 	// Parse the config
 	config := &anchor.ConfluxConfig{

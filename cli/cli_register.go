@@ -13,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// Register registers a new conflux with a registration token and options (rift, portal, guardian, tag, IP, JWT/JWKS, taints, tracer, debug).
 type Register struct {
 	RegistrationToken string   `short:"t" help:"The registration token" env:"VEILNET_REGISTRATION_TOKEN" json:"registration_token"`
 	Rift              bool     `short:"r" help:"Enable rift mode, default: false" default:"false" env:"VEILNET_CONFLUX_RIFT" json:"rift"`
@@ -35,11 +36,19 @@ type Register struct {
 	OTLPClientKey     string   `help:"The OTLP client key for the metrics" env:"VEILNET_OTLP_CLIENT_KEY" json:"otlp_client_key"`
 }
 
+// ConfluxToken holds conflux ID and token (e.g. from registration response).
 type ConfluxToken struct {
 	ConfluxID string `json:"conflux_id"`
 	Token     string `json:"token"`
 }
 
+// Run registers the conflux, saves config, and either installs the service or runs the anchor in debug mode.
+//
+// Inputs:
+//   - cmd: *Register. Registration token, guardian, tag, IP, JWT/JWKS, taints, tracer options, debug.
+//
+// Outputs:
+//   - err: error. Non-nil if registration, config save, service install, or anchor start fails.
 func (cmd *Register) Run() error {
 
 	// Parse the command
