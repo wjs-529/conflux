@@ -47,6 +47,7 @@ enum CmdType {
     ADD_TAINT = 4;
     REMOVE_TAINT = 5;
     QUERY_TAINTS = 6;
+    QUERY_INFO = 7;
 }
 
 enum Role {
@@ -223,6 +224,10 @@ message QueryTaints {
     string signature = 1;
 }
 
+message QueryInfo {
+    string signature = 1;
+}
+
 // gRPC messages
 
 message TracerConfig {
@@ -244,13 +249,14 @@ message StartAnchorRequest {
     TracerConfig tracer = 6;
 }
 
-message CreateTUNRequest {
-    string ifname = 1;
-    int32 mtu = 2;
-}
-
-message AttachWithFileDescriptorRequest {
-    int32 file_descriptor = 1;
+message StartAnchorWithFDRequest {
+    string guardian_url = 1;
+    string anchor_token = 2;
+    string ip = 3;
+    bool rift = 4;
+    bool portal = 5;
+    TracerConfig tracer = 6;
+    int32 file_descriptor = 7;
 }
 
 message AddTaintRequest {
@@ -285,8 +291,8 @@ message GetVeilInfoResponse {
 
 service Anchor {
     rpc StartAnchor(StartAnchorRequest) returns (google.protobuf.Empty);
+    rpc StartAnchorWithFD(StartAnchorWithFDRequest) returns (google.protobuf.Empty);
     rpc StopAnchor(google.protobuf.Empty) returns (google.protobuf.Empty);
-    rpc AttachWithFileDescriptor(AttachWithFileDescriptorRequest) returns (google.protobuf.Empty);
     rpc AddTaint(AddTaintRequest) returns (google.protobuf.Empty);
     rpc RemoveTaint(RemoveTaintRequest) returns (google.protobuf.Empty);
     rpc GetInfo(google.protobuf.Empty) returns (GetInfoResponse);

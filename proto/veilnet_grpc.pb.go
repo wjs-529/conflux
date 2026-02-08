@@ -20,15 +20,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Anchor_StartAnchor_FullMethodName              = "/veilnet.Anchor/StartAnchor"
-	Anchor_StopAnchor_FullMethodName               = "/veilnet.Anchor/StopAnchor"
-	Anchor_AttachWithFileDescriptor_FullMethodName = "/veilnet.Anchor/AttachWithFileDescriptor"
-	Anchor_AddTaint_FullMethodName                 = "/veilnet.Anchor/AddTaint"
-	Anchor_RemoveTaint_FullMethodName              = "/veilnet.Anchor/RemoveTaint"
-	Anchor_GetInfo_FullMethodName                  = "/veilnet.Anchor/GetInfo"
-	Anchor_GetRealmInfo_FullMethodName             = "/veilnet.Anchor/GetRealmInfo"
-	Anchor_GetVeilInfo_FullMethodName              = "/veilnet.Anchor/GetVeilInfo"
-	Anchor_GetTracerConfig_FullMethodName          = "/veilnet.Anchor/GetTracerConfig"
+	Anchor_StartAnchor_FullMethodName       = "/veilnet.Anchor/StartAnchor"
+	Anchor_StartAnchorWithFD_FullMethodName = "/veilnet.Anchor/StartAnchorWithFD"
+	Anchor_StopAnchor_FullMethodName        = "/veilnet.Anchor/StopAnchor"
+	Anchor_AddTaint_FullMethodName          = "/veilnet.Anchor/AddTaint"
+	Anchor_RemoveTaint_FullMethodName       = "/veilnet.Anchor/RemoveTaint"
+	Anchor_GetInfo_FullMethodName           = "/veilnet.Anchor/GetInfo"
+	Anchor_GetRealmInfo_FullMethodName      = "/veilnet.Anchor/GetRealmInfo"
+	Anchor_GetVeilInfo_FullMethodName       = "/veilnet.Anchor/GetVeilInfo"
+	Anchor_GetTracerConfig_FullMethodName   = "/veilnet.Anchor/GetTracerConfig"
 )
 
 // AnchorClient is the client API for Anchor service.
@@ -36,8 +36,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AnchorClient interface {
 	StartAnchor(ctx context.Context, in *StartAnchorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	StartAnchorWithFD(ctx context.Context, in *StartAnchorWithFDRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	StopAnchor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	AttachWithFileDescriptor(ctx context.Context, in *AttachWithFileDescriptorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	AddTaint(ctx context.Context, in *AddTaintRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	RemoveTaint(ctx context.Context, in *RemoveTaintRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetInfoResponse, error)
@@ -64,20 +64,20 @@ func (c *anchorClient) StartAnchor(ctx context.Context, in *StartAnchorRequest, 
 	return out, nil
 }
 
-func (c *anchorClient) StopAnchor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *anchorClient) StartAnchorWithFD(ctx context.Context, in *StartAnchorWithFDRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Anchor_StopAnchor_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Anchor_StartAnchorWithFD_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *anchorClient) AttachWithFileDescriptor(ctx context.Context, in *AttachWithFileDescriptorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *anchorClient) StopAnchor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Anchor_AttachWithFileDescriptor_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Anchor_StopAnchor_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -149,8 +149,8 @@ func (c *anchorClient) GetTracerConfig(ctx context.Context, in *emptypb.Empty, o
 // for forward compatibility.
 type AnchorServer interface {
 	StartAnchor(context.Context, *StartAnchorRequest) (*emptypb.Empty, error)
+	StartAnchorWithFD(context.Context, *StartAnchorWithFDRequest) (*emptypb.Empty, error)
 	StopAnchor(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
-	AttachWithFileDescriptor(context.Context, *AttachWithFileDescriptorRequest) (*emptypb.Empty, error)
 	AddTaint(context.Context, *AddTaintRequest) (*emptypb.Empty, error)
 	RemoveTaint(context.Context, *RemoveTaintRequest) (*emptypb.Empty, error)
 	GetInfo(context.Context, *emptypb.Empty) (*GetInfoResponse, error)
@@ -170,11 +170,11 @@ type UnimplementedAnchorServer struct{}
 func (UnimplementedAnchorServer) StartAnchor(context.Context, *StartAnchorRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartAnchor not implemented")
 }
+func (UnimplementedAnchorServer) StartAnchorWithFD(context.Context, *StartAnchorWithFDRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartAnchorWithFD not implemented")
+}
 func (UnimplementedAnchorServer) StopAnchor(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StopAnchor not implemented")
-}
-func (UnimplementedAnchorServer) AttachWithFileDescriptor(context.Context, *AttachWithFileDescriptorRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AttachWithFileDescriptor not implemented")
 }
 func (UnimplementedAnchorServer) AddTaint(context.Context, *AddTaintRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddTaint not implemented")
@@ -233,6 +233,24 @@ func _Anchor_StartAnchor_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Anchor_StartAnchorWithFD_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartAnchorWithFDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AnchorServer).StartAnchorWithFD(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Anchor_StartAnchorWithFD_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AnchorServer).StartAnchorWithFD(ctx, req.(*StartAnchorWithFDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Anchor_StopAnchor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
@@ -247,24 +265,6 @@ func _Anchor_StopAnchor_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AnchorServer).StopAnchor(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Anchor_AttachWithFileDescriptor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AttachWithFileDescriptorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AnchorServer).AttachWithFileDescriptor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Anchor_AttachWithFileDescriptor_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AnchorServer).AttachWithFileDescriptor(ctx, req.(*AttachWithFileDescriptorRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -389,12 +389,12 @@ var Anchor_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Anchor_StartAnchor_Handler,
 		},
 		{
-			MethodName: "StopAnchor",
-			Handler:    _Anchor_StopAnchor_Handler,
+			MethodName: "StartAnchorWithFD",
+			Handler:    _Anchor_StartAnchorWithFD_Handler,
 		},
 		{
-			MethodName: "AttachWithFileDescriptor",
-			Handler:    _Anchor_AttachWithFileDescriptor_Handler,
+			MethodName: "StopAnchor",
+			Handler:    _Anchor_StopAnchor_Handler,
 		},
 		{
 			MethodName: "AddTaint",
