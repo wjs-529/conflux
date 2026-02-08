@@ -10,7 +10,6 @@ import (
 	"github.com/veil-net/conflux/anchor"
 	pb "github.com/veil-net/conflux/proto"
 	"github.com/veil-net/conflux/service"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Up starts the veilnet service with a conflux token; flags include conflux ID, token, guardian, rift/portal, IP, taints, and debug.
@@ -76,6 +75,7 @@ func (cmd *Up) Run() error {
 	// Create a gRPC client connection
 	anchor, err := anchor.NewAnchorClient()
 	if err != nil {
+		subprocess.Process.Kill()
 		Logger.Sugar().Errorf("failed to create anchor gRPC client: %v", err)
 		return err
 	}
@@ -89,6 +89,7 @@ func (cmd *Up) Run() error {
 		Portal:      config.Portal,
 	})
 	if err != nil {
+		subprocess.Process.Kill()
 		Logger.Sugar().Errorf("failed to start anchor: %v", err)
 		return err
 	}
@@ -110,15 +111,6 @@ func (cmd *Up) Run() error {
 
 	// Wait for interrupt signal
 	<-interrupt
-
-	// Stop the anchor
-	_, err = anchor.StopAnchor(context.Background(), &emptypb.Empty{})
-	if err != nil {
-		Logger.Sugar().Errorf("failed to stop anchor: %v", err)
-	}
-
-	// Kill the anchor subprocess
-	subprocess.Process.Kill()
 
 	return nil
 }

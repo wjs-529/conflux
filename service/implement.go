@@ -9,7 +9,6 @@ import (
 
 	"github.com/veil-net/conflux/anchor"
 	pb "github.com/veil-net/conflux/proto"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // ServiceImpl is the concrete implementation that runs the anchor (load config, start subprocess, gRPC client, handle signals).
@@ -97,8 +96,5 @@ func (s *ServiceImpl) Run() {
 
 	// Wait for interrupt signal
 	<-interrupt
-
-	// Stop the anchor
-	_, err = anchor.StopAnchor(context.Background(), &emptypb.Empty{})
 
 }
