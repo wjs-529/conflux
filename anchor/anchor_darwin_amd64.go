@@ -14,7 +14,7 @@ import (
 )
 
 // anchorPlugin is the embedded anchor binary for this GOOS/GOARCH.
-//go:embed bin/anchor-darwin-10.12-amd64
+//go:embed bin/anchor-darwin-amd64
 var anchorPlugin []byte
 
 // NewAnchor extracts the embedded binary to a temp file and starts it as a subprocess (gRPC server).

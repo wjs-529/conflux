@@ -12,7 +12,6 @@ import (
 	"golang.org/x/sys/windows/svc/mgr"
 	"github.com/veil-net/conflux/anchor"
 	pb "github.com/veil-net/conflux/proto"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // service is the Windows implementation holding the ServiceImpl; it implements svc.Handler via Execute.
@@ -313,8 +312,8 @@ func (s *service) Execute(args []string, changeRequests <-chan svc.ChangeRequest
 		case svc.Interrogate:
 			changes <- changeRequest.CurrentStatus
 		case svc.Stop, svc.Shutdown:
-			changes <- svc.Status{State: svc.StopPending}
-			anchor.StopAnchor(context.Background(), &emptypb.Empty{})
+			// changes <- svc.Status{State: svc.StopPending}
+			// anchor.StopAnchor(context.Background(), &emptypb.Empty{})
 			changes <- svc.Status{State: svc.Stopped}
 			return false, 0
 		default:
