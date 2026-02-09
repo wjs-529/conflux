@@ -2,9 +2,7 @@
 
 VeilNet Conflux is a networking service that connects to VeilNet, a decentralized post-quantum secure network. For installation, configuration, and usage, see the [official documentation](https://docs.veilnet.app).
 
-> **Warning — Stable Beta v1.0.0:** At the moment, the stable beta v1.0.0 must use `--guardian https://dev-guardian.veilnet.app` (or set `VEILNET_GUARDIAN` to that URL). Full rollout will be soon.
-
-> **Warning:** VeilNet may not be available during this week while the guardian server is being updated.
+> **Beta v1.0.2+:** The guardian server is now updated to support Beta v1.0.2 and above. An explicit `--guardian` URL is no longer needed. Old registration tokens no longer work; all public realms except **Terra** have been removed. If you deployed Conflux previously, you must re-deploy with Beta v1.0.2 (use Docker image tag `Beta-v1.0.2`). There should be no more breaking changes.
 
 ## How It Works
 
@@ -62,7 +60,7 @@ For more details, visit the [VeilNet homepage](https://veilnet.net/).
 
 ## How Connectivity is Established
 
-VeilNet establishes connectivity through a decentralized, ephemeral architecture that differs fundamentally from traditional overlay VPNs. For a comparison with other overlay VPN solutions, see the [official comparison documentation](https://docs.veilnet.app/veilnet-vs-overlay-vpns/).
+VeilNet establishes connectivity through a decentralized, ephemeral architecture that differs fundamentally from traditional overlay VPNs.
 
 ### Control Channel (VeilNet Master)
 
