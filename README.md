@@ -330,3 +330,6 @@ Taints can be set at registration or managed at runtime via the CLI. The key pri
 
 For installation and usage, see the [official documentation](https://docs.veilnet.app). For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/veil-net/conflux).
 
+## License
+
+VeilNet © 2025 by Yifei Ren is licensed under CC BY-NC 4.0. To view a copy of this license, visit [https://creativecommons.org/licenses/by-nc/4.0/](https://creativecommons.org/licenses/by-nc/4.0/).
