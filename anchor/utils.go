@@ -132,6 +132,9 @@ func SaveConfig(config *ConfluxConfig) error {
 	if err != nil {
 		return err
 	}
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return err
+	}
 	err = os.WriteFile(configFilePath, configFile, 0644)
 	if err != nil {
 		return err
